@@ -1,71 +1,218 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>EgoEngine · Egocentric → Robot Demos</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { margin: 0; font-family: system-ui, sans-serif; line-height: 1.6; color: #333; }
-    header { text-align: center; padding: 3rem 1rem; background-color: #fafafa; }
-    h1 { margin: 0; font-size: 2.5rem; }
-    .tagline { font-size: 1.2rem; color: #555; margin-top: 0.5rem; }
-    .links { margin-top: 1rem; }
-    .links a { margin: 0 1rem; text-decoration: none; color: #0366d6; font-weight: bold; }
-    .teaser { width: 100%; max-height: 600px; object-fit: cover; display: block; margin-top: 2rem; }
-    main { max-width: 900px; margin: 3rem auto; padding: 0 1rem; }
-    section { margin-bottom: 2rem; }
-    section h2 { border-bottom: 2px solid #ddd; padding-bottom: 0.3rem; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    video, iframe { width: 100%; height: auto; }
-  </style>
+<meta charset="utf-8" />
+<title>EgoEngine · Teaser Grid (Swipe Split Videos)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root { color-scheme: light dark; --cols: 6; --rows: 3; --gap: 8px; --tile: 160px; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background: #0b0b0c; color: #fff; }
+
+  /* ======= FULL-SCREEN HERO ======= */
+  .hero {
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 2vmin;
+    overflow: hidden;
+  }
+
+  /* Grid sized by JS to perfectly fit 3×6 of square tiles */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), var(--tile));
+    grid-template-rows: repeat(var(--rows), var(--tile));
+    gap: var(--gap);
+    touch-action: none; /* smoother pointer events on mobile */
+  }
+
+  .tile {
+    position: relative;
+    width: var(--tile);
+    height: var(--tile);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #111;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset, 0 8px 20px rgba(0,0,0,.35);
+  }
+
+  .tile video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #000; /* if frame not loaded yet */
+  }
+
+  /* Bottom layer: inpainted (always fully visible) */
+  .video-bottom { z-index: 0; }
+
+  /* Top layer: cropped (clipped to the mouse-controlled split) */
+  .video-top {
+    z-index: 1;
+    /* Clip to left side up to --cut (percentage). Default 50% */
+    --cut: 50%;
+    clip-path: inset(0 calc(100% - var(--cut)) 0 0);
+  }
+
+  /* Divider line that follows the mouse (over everything) */
+  .divider {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.25);
+    transform: translateX(-1px); /* center 2px line on cut */
+    z-index: 2;
+    left: var(--cut); /* same percentage as clip boundary */
+    pointer-events: none;
+  }
+
+  /* Optional label badges (folder names) */
+  .badge {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    padding: .25rem .5rem;
+    border-radius: 999px;
+    font-size: 12px;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255,255,255,.15);
+    z-index: 3;
+  }
+
+  /* Minimal header overlay (optional) */
+  .overlay-title {
+    position: fixed;
+    top: 14px; left: 50%;
+    transform: translateX(-50%);
+    padding: .35rem .7rem;
+    border-radius: 10px;
+    background: rgba(0,0,0,.45);
+    border: 1px solid rgba(255,255,255,.18);
+    font-weight: 600;
+    letter-spacing: .2px;
+    z-index: 1000;
+  }
+</style>
 </head>
 <body>
 
-  <header>
-    <h1>EgoEngine</h1>
-    <div class="tagline">Egocentric Human Videos → High-Fidelity Robot Demonstrations</div>
-    <div class="links">
-      <a href="#">Paper</a>
-      <a href="#">Code</a>
-      <a href="#">Video</a>
-    </div>
-    <!-- 大 teaser 图 -->
-    <img class="teaser" src="teaser.png" alt="EgoEngine Teaser Figure">
-  </header>
+<div class="overlay-title">EgoEngine — Hover to swipe between <b>cropped</b> and <b>inpainted</b></div>
 
-  <main>
-    <section>
-      <h2>Abstract</h2>
-      <p>
-        EgoEngine translates egocentric human videos into robot-executable demonstrations via fingertip-to-joint retargeting,
-        object-centric reinforcement learning, and visual synthesis. It closes both visual and action gaps between human and robot
-        embodiments, enabling sample-efficient learning of dexterous manipulation.
-      </p>
-    </section>
+<section class="hero">
+  <div id="grid" class="grid" aria-label="Swipe-split paired videos grid"></div>
+</section>
 
-    <section>
-      <h2>Teaser Video</h2>
-      <!-- YouTube 示例 -->
-      <iframe width="100%" height="480"
-        src="https://www.youtube.com/embed/VIDEO_ID"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-      </iframe>
-    </section>
+<script>
+  // ===== CONFIG =====
+  const BASE = "videos/blending/human"; // relative to your site root
+  const FOLDERS = [
+    "Cassie-bartending",
+    "Cassie-bartending2",
+    "Cassie-blinds",
+    "Cassie-boardgame",
+    "Cassie-cat2",
+    "Cassie-cat_food",
+    "Cassie-cooking2",
+    "Cassie-door",
+    "Cassie-earbuds",
+    "Cassie-eyedrops",
+    "Cassie-flower",
+    "Cassie-fridge",
+    "Cassie-laptop",
+    "Cassie-microwave",
+    "Cassie-oven",
+    "Cassie-subway",
+    "Cassie-yogurt",
+    "Cassie-Rowan-Allen"
+  ];
 
-    <section>
-      <h2>More Results</h2>
-      <div class="grid">
-        <video controls>
-          <source src="video1.mp4" type="video/mp4">
-        </video>
-        <video controls>
-          <source src="video2.mp4" type="video/mp4">
-        </video>
-      </div>
-    </section>
-  </main>
+  // Grid size (3×6 for 18 tiles)
+  const ROWS = 3, COLS = 6;
 
+  // ===== BUILD GRID =====
+  const grid = document.getElementById("grid");
+  document.documentElement.style.setProperty('--rows', ROWS);
+  document.documentElement.style.setProperty('--cols', COLS);
+
+  function fitGridToViewport() {
+    // compute exact square tile size that fits viewport for ROWS × COLS
+    const pad = Math.max(window.innerWidth, window.innerHeight) * 0.02; // approximate outer padding
+    const availW = window.innerWidth  - pad * 2 - (COLS - 1) * parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
+    const availH = window.innerHeight - pad * 2 - (ROWS - 1) * parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
+    const tileW  = Math.floor(availW / COLS);
+    const tileH  = Math.floor(availH / ROWS);
+    const tile   = Math.max(80, Math.min(tileW, tileH)); // clamp to a sensible minimum
+    document.documentElement.style.setProperty('--tile', tile + "px");
+  }
+  fitGridToViewport();
+  window.addEventListener('resize', fitGridToViewport);
+
+  function createTile(folder) {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.style.setProperty('--cut', '50%'); // initial split
+
+    const bottom = document.createElement('video');
+    bottom.className = 'video-bottom';
+    bottom.src = `${BASE}/${folder}/inpainted_video.mp4`;
+    bottom.muted = true; bottom.loop = true; bottom.playsInline = true; bottom.autoplay = true; bottom.preload = "metadata";
+
+    const top = document.createElement('video');
+    top.className = 'video-top';
+    top.src = `${BASE}/${folder}/cropped_video.mp4`;
+    top.muted = true; top.loop = true; top.playsInline = true; top.autoplay = true; top.preload = "metadata";
+
+    const divider = document.createElement('div');
+    divider.className = 'divider';
+
+    const badge = document.createElement('div');
+    badge.className = 'badge';
+    badge.textContent = folder;
+
+    // Ensure playback starts (some browsers need a play() nudge even with autoplay+muted)
+    const ensurePlay = v => v.play().catch(()=>{ /* ignore */ });
+
+    top.addEventListener('canplay', () => ensurePlay(top));
+    bottom.addEventListener('canplay', () => ensurePlay(bottom));
+
+    // Pointer tracking: move cut to local X
+    const setCutFromEvent = (e) => {
+      const rect = tile.getBoundingClientRect();
+      const x = (e.clientX ?? (e.touches && e.touches[0].clientX) ?? rect.left) - rect.left;
+      const pct = Math.max(0, Math.min(1, x / rect.width));
+      const cut = (pct * 100).toFixed(3) + '%';
+      tile.style.setProperty('--cut', cut);
+    };
+
+    // Mouse / touch events
+    tile.addEventListener('mousemove', setCutFromEvent);
+    tile.addEventListener('mouseenter', setCutFromEvent);
+    tile.addEventListener('touchstart', (e) => { setCutFromEvent(e); }, { passive: true });
+    tile.addEventListener('touchmove',  (e) => { setCutFromEvent(e); }, { passive: true });
+
+    tile.appendChild(bottom);
+    tile.appendChild(top);
+    tile.appendChild(divider);
+    tile.appendChild(badge);
+    return tile;
+  }
+
+  // Build tiles (first 18 folders)
+  FOLDERS.slice(0, ROWS * COLS).forEach(folder => {
+    grid.appendChild(createTile(folder));
+  });
+
+  // Optional: if you want ALL videos to keep playing even after tab switches (best-effort)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      document.querySelectorAll('video').forEach(v => v.play().catch(()=>{}));
+    }
+  });
+</script>
 </body>
 </html>
