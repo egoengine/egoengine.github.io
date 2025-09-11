@@ -1,53 +1,28 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>EgoEngine — 全局滑动比较</title>
+<title>EgoEngine — global swipe</title>
 <style>
   :root { --divider-x: 50vw; --line: rgba(255,255,255,.95); --bg:#0b0b0c; }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:#eaeaea;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 
-  /* 零间距网格 */
-  .grid{
-    display:grid; grid-template-columns:repeat(6,1fr);
-    gap:0; width:100vw; max-width:100vw; margin:0 auto;
-  }
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0;width:100vw;max-width:100vw;margin:0 auto;}
   @media (max-width:1400px){.grid{grid-template-columns:repeat(5,1fr)}}
   @media (max-width:1100px){.grid{grid-template-columns:repeat(4,1fr)}}
   @media (max-width:900px){ .grid{grid-template-columns:repeat(3,1fr)}}
   @media (max-width:640px){ .grid{grid-template-columns:repeat(2,1fr)}}
   @media (max-width:420px){ .grid{grid-template-columns:1fr}}
-
-  .tile{ position:relative; aspect-ratio:1/1; overflow:hidden; background:#000; }
-
-  .tile video{
-    position:absolute; inset:0; width:100%; height:100%;
-    object-fit:cover; display:block; background:#000; opacity:0; transition:opacity .2s linear;
-  }
-  .tile video.ready{ opacity:1; }
-
-  /* 左侧覆盖的 cropped；JS 设置每格的 --cut */
-  .tile video.overlay{
-    clip-path:polygon(0 0, var(--cut,0px) 0, var(--cut,0px) 100%, 0 100%);
-    will-change:clip-path;
-  }
-
-  /* 错误标记 */
-  .badge{
-    position:absolute; top:6px; left:6px; z-index:4;
-    background:#b00020; color:#fff; font:12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
-    padding:4px 6px; border-radius:6px; opacity:.92; pointer-events:none; display:none;
-  }
-  .tile.error .badge{ display:block; }
-
-  /* 全局分割线 */
-  #divider{
-    position:fixed; top:0; bottom:0; left:var(--divider-x); width:2px;
-    background:var(--line); transform:translateX(-1px); pointer-events:none; z-index:5;
-  }
+  .tile{position:relative;aspect-ratio:1/1;overflow:hidden;background:#000}
+  .tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#000;opacity:0;transition:opacity .15s linear}
+  .tile video.ready{opacity:1}
+  .tile video.overlay{clip-path:polygon(0 0, var(--cut,0px) 0, var(--cut,0px) 100%, 0 100%);will-change:clip-path}
+  .badge{position:absolute;top:6px;left:6px;z-index:4;background:#b00020;color:#fff;font:12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;padding:4px 6px;border-radius:6px;opacity:.92;pointer-events:none;display:none}
+  .tile.error .badge{display:block}
+  #divider{position:fixed;top:0;bottom:0;left:var(--divider-x);width:2px;background:var(--line);transform:translateX(-1px);pointer-events:none;z-index:5}
 </style>
 </head>
 <body>
@@ -55,61 +30,49 @@
   <main id="grid" class="grid"></main>
 
 <script>
-  // 站点内相对路径根
   const ROOT = './videos/blending/human';
-
-  // 子目录列表：确保和磁盘目录同名且存在这两段 mp4
   const FOLDERS = [
     'Cassie-bartending','Cassie-bartending2','Cassie-blinds','Cassie-boardgame','Cassie-cat2','Cassie-cat_food',
     'Cassie-cooking2','Cassie-door','Cassie-earbuds','Cassie-eyedrops','Cassie-flower','Cassie-fridge',
     'Cassie-laptop','Cassie-microwave','Cassie-oven','Cassie-subway','Cassie-yogurt','Cassie-Rowan-Allen',
   ];
 
-  function makeVideo(src, extraClass=''){
+  function makeVideo(src){
     const v = document.createElement('video');
-    if(extraClass) v.className = extraClass;
     v.autoplay = true; v.muted = true; v.defaultMuted = true; v.loop = true;
     v.playsInline = true; v.setAttribute('playsinline',''); v.setAttribute('muted',''); v.setAttribute('webkit-playsinline','');
     v.preload = 'auto';
-    v.src = src + '#t=0.001'; // 触发首帧解码快一点
+    v.src = src + '?v=1#t=0.001'; // cache bust + 立即解码
     v.addEventListener('loadeddata', ()=> v.classList.add('ready'), {once:true});
     const tryPlay = ()=> v.play().catch(()=>{});
     v.addEventListener('canplay', tryPlay, {once:true});
     v.addEventListener('mouseenter', tryPlay);
     v.addEventListener('touchstart', tryPlay, {passive:true});
+    v.addEventListener('error', ()=> { v.closest('.tile')?.classList.add('error'); }, {once:true});
     return v;
   }
 
   const grid = document.getElementById('grid');
 
-  // 构建网格（不做 HEAD 探测）
   (function build(){
     for(const name of FOLDERS){
       const tile = document.createElement('div'); tile.className = 'tile';
-      const badge = document.createElement('div'); badge.className = 'badge'; badge.textContent = 'missing';
+      const badge = document.createElement('div'); badge.className = 'badge'; badge.textContent = 'load error';
       tile.appendChild(badge);
 
       const urlInpaint = `${ROOT}/${name}/inpainted_video.mp4`;
       const urlCropped = `${ROOT}/${name}/cropped_video.mp4`;
 
       const inpainted = makeVideo(urlInpaint);
-      const cropped   = makeVideo(urlCropped, 'overlay');
-
-      // 如果视频加载失败，在该 tile 打标记（但不影响其他格）
-      inpainted.onerror = cropped.onerror = ()=> { tile.classList.add('error'); };
-
+      const cropped   = makeVideo(urlCropped); cropped.className = 'overlay';
       tile.append(inpainted, cropped);
       grid.appendChild(tile);
     }
     requestAnimationFrame(()=>{ updateDivider(); updateClips(); });
   })();
 
-  // 全局分割线 + 每格裁切
   let cutX = Math.round(window.innerWidth * 0.5);
-
-  function updateDivider(){
-    document.documentElement.style.setProperty('--divider-x', cutX + 'px');
-  }
+  function updateDivider(){ document.documentElement.style.setProperty('--divider-x', cutX + 'px'); }
   function updateClips(){
     document.querySelectorAll('.tile').forEach(tile=>{
       const r = tile.getBoundingClientRect();
@@ -117,11 +80,7 @@
       tile.style.setProperty('--cut', local + 'px');
     });
   }
-  function setCutFrom(x){
-    cutX = Math.max(0, Math.min(window.innerWidth, x));
-    updateDivider(); updateClips();
-  }
-
+  function setCutFrom(x){ cutX = Math.max(0, Math.min(window.innerWidth, x)); updateDivider(); updateClips(); }
   window.addEventListener('mousemove', e=> setCutFrom(e.clientX));
   window.addEventListener('touchstart', e=> e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
   window.addEventListener('touchmove',  e=> e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
