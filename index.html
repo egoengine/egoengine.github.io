@@ -10,16 +10,17 @@
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:#eaeaea;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 
-  /* ===== Big text logo (letters only) ===== */
+  /* ===== Centered text logo (letters only) ===== */
   .brand{
-    position:fixed; top:24px; left:50%; transform:translateX(-50%);
+    position:fixed; inset:0;               /* full-viewport */
+    display:flex; align-items:center; justify-content:center;
     z-index:1002; pointer-events:none; user-select:none;
   }
   .brand .wordmark{
-    font-weight:900; font-size:clamp(36px,8vw,96px); line-height:1; letter-spacing:.5px;
+    font-weight:900; font-size:clamp(42px,10vw,120px); line-height:1; letter-spacing:.5px;
     background:linear-gradient(180deg,#fff,#dfe5ff);
     -webkit-background-clip:text; background-clip:text; color:transparent;
-    text-shadow:0 8px 28px rgba(0,0,0,.35);
+    text-shadow:0 10px 32px rgba(0,0,0,.45);
   }
 
   /* ===== ZERO-gap grid ===== */
@@ -54,7 +55,7 @@
 </style>
 </head>
 <body>
-  <!-- TEXT-ONLY LOGO -->
+  <!-- TEXT-ONLY LOGO, centered -->
   <div class="brand"><div class="wordmark">EgoEngine</div></div>
 
   <div id="divider"></div>
