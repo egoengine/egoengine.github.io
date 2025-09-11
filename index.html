@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>EgoEngine — global swipe</title>
+<title>EgoEngine — 全局滑动比较</title>
 <style>
   :root { --divider-x: 50vw; --line: rgba(255,255,255,.95); --bg:#0b0b0c; }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:#eaeaea;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 
-  /* ZERO-gap grid */
+  /* 零间距网格 */
   .grid{
     display:grid; grid-template-columns:repeat(6,1fr);
     gap:0; width:100vw; max-width:100vw; margin:0 auto;
@@ -29,13 +29,13 @@
   }
   .tile video.ready{ opacity:1; }
 
-  /* cropped overlay; JS sets --cut in px */
+  /* 左侧覆盖的 cropped；JS 设置每格的 --cut */
   .tile video.overlay{
     clip-path:polygon(0 0, var(--cut,0px) 0, var(--cut,0px) 100%, 0 100%);
     will-change:clip-path;
   }
 
-  /* error badge (only shown if both streams fail) */
+  /* 错误标记 */
   .badge{
     position:absolute; top:6px; left:6px; z-index:4;
     background:#b00020; color:#fff; font:12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -43,7 +43,7 @@
   }
   .tile.error .badge{ display:block; }
 
-  /* ONE global divider line */
+  /* 全局分割线 */
   #divider{
     position:fixed; top:0; bottom:0; left:var(--divider-x); width:2px;
     background:var(--line); transform:translateX(-1px); pointer-events:none; z-index:5;
@@ -55,30 +55,23 @@
   <main id="grid" class="grid"></main>
 
 <script>
-  // =================== CONFIG ===================
-  // Relative root (works locally and on Pages)
-  const ROOT = 'videos/blending/human';
+  // 站点内相对路径根
+  const ROOT = './videos/blending/human';
 
-  // If any file is stored with Git LFS, GitHub Pages won’t serve it.
-  // We auto-fallback to media.githubusercontent.com:
-  const ORG  = 'egoengine';
-  const REPO = 'egoengine.github.io';
-  const LFS_PREFIX = `https://media.githubusercontent.com/media/${ORG}/${REPO}/main/${ROOT}`;
-
-  // Your 18 folders
+  // 子目录列表：确保和磁盘目录同名且存在这两段 mp4
   const FOLDERS = [
     'Cassie-bartending','Cassie-bartending2','Cassie-blinds','Cassie-boardgame','Cassie-cat2','Cassie-cat_food',
     'Cassie-cooking2','Cassie-door','Cassie-earbuds','Cassie-eyedrops','Cassie-flower','Cassie-fridge',
     'Cassie-laptop','Cassie-microwave','Cassie-oven','Cassie-subway','Cassie-yogurt','Cassie-Rowan-Allen',
   ];
 
-  // =================== helpers ===================
-  function makeVideo(src){
+  function makeVideo(src, extraClass=''){
     const v = document.createElement('video');
+    if(extraClass) v.className = extraClass;
     v.autoplay = true; v.muted = true; v.defaultMuted = true; v.loop = true;
     v.playsInline = true; v.setAttribute('playsinline',''); v.setAttribute('muted',''); v.setAttribute('webkit-playsinline','');
     v.preload = 'auto';
-    v.src = src + '#t=0.001'; // nudge some browsers
+    v.src = src + '#t=0.001'; // 触发首帧解码快一点
     v.addEventListener('loadeddata', ()=> v.classList.add('ready'), {once:true});
     const tryPlay = ()=> v.play().catch(()=>{});
     v.addEventListener('canplay', tryPlay, {once:true});
@@ -87,53 +80,31 @@
     return v;
   }
 
-  // If a video fails (404 or LFS pointer), retry from media.githubusercontent.com
-  function addLfsFallback(videoEl, pathFromRoot){
-    let tried = false;
-    videoEl.addEventListener('error', ()=>{
-      if (tried) return;
-      tried = true;
-      const lfsUrl = `${LFS_PREFIX}/${pathFromRoot}`;
-      videoEl.src = lfsUrl + '#t=0.001';
-    });
-  }
-
   const grid = document.getElementById('grid');
 
+  // 构建网格（不做 HEAD 探测）
   (function build(){
     for(const name of FOLDERS){
       const tile = document.createElement('div'); tile.className = 'tile';
       const badge = document.createElement('div'); badge.className = 'badge'; badge.textContent = 'missing';
       tile.appendChild(badge);
 
-      // Right = inpainted (base); Left = cropped (overlay, clipped)
-      const pathInpaint = `${name}/inpainted_video.mp4`;
-      const pathCropped = `${name}/cropped_video.mp4`;
-
-      const urlInpaint = `${ROOT}/${pathInpaint}`;
-      const urlCropped = `${ROOT}/${pathCropped}`;
+      const urlInpaint = `${ROOT}/${name}/inpainted_video.mp4`;
+      const urlCropped = `${ROOT}/${name}/cropped_video.mp4`;
 
       const inpainted = makeVideo(urlInpaint);
-      const cropped   = makeVideo(urlCropped); cropped.className = 'overlay';
+      const cropped   = makeVideo(urlCropped, 'overlay');
 
-      addLfsFallback(inpainted, pathInpaint);
-      addLfsFallback(cropped,   pathCropped);
-
-      // If both ultimately error, mark tile
-      let errs = 0;
-      const markErr = ()=>{ if(++errs >= 2) tile.classList.add('error'); };
-      inpainted.addEventListener('error', markErr);
-      cropped.addEventListener('error',   markErr);
+      // 如果视频加载失败，在该 tile 打标记（但不影响其他格）
+      inpainted.onerror = cropped.onerror = ()=> { tile.classList.add('error'); };
 
       tile.append(inpainted, cropped);
       grid.appendChild(tile);
     }
-
-    // After layout, compute initial clips
     requestAnimationFrame(()=>{ updateDivider(); updateClips(); });
   })();
 
-  // ========== global divider + clipping ==========
+  // 全局分割线 + 每格裁切
   let cutX = Math.round(window.innerWidth * 0.5);
 
   function updateDivider(){
