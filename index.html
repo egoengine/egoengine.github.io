@@ -10,7 +10,7 @@
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:#eaeaea;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 
-  /* ZERO gaps grid */
+  /* ZERO-gap grid */
   .grid{
     display:grid; grid-template-columns:repeat(6,1fr);
     gap:0; width:100vw; max-width:100vw; margin:0 auto;
@@ -35,7 +35,7 @@
     will-change:clip-path;
   }
 
-  /* error badge */
+  /* error badge (only shown if both streams fail) */
   .badge{
     position:absolute; top:6px; left:6px; z-index:4;
     background:#b00020; color:#fff; font:12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -55,27 +55,30 @@
   <main id="grid" class="grid"></main>
 
 <script>
-  // ------------------- CONFIG -------------------
-  // IMPORTANT: This must be the path RELATIVE to index.html in the repo.
-  // Your structure:
-  //   /index.html
-  //   /videos/blending/human/<FOLDER>/{cropped_video.mp4,inpainted_video.mp4}
-  const ROOT = './videos/blending/human';
+  // =================== CONFIG ===================
+  // Relative root (works locally and on Pages)
+  const ROOT = 'videos/blending/human';
 
+  // If any file is stored with Git LFS, GitHub Pages won’t serve it.
+  // We auto-fallback to media.githubusercontent.com:
+  const ORG  = 'egoengine';
+  const REPO = 'egoengine.github.io';
+  const LFS_PREFIX = `https://media.githubusercontent.com/media/${ORG}/${REPO}/main/${ROOT}`;
+
+  // Your 18 folders
   const FOLDERS = [
     'Cassie-bartending','Cassie-bartending2','Cassie-blinds','Cassie-boardgame','Cassie-cat2','Cassie-cat_food',
     'Cassie-cooking2','Cassie-door','Cassie-earbuds','Cassie-eyedrops','Cassie-flower','Cassie-fridge',
     'Cassie-laptop','Cassie-microwave','Cassie-oven','Cassie-subway','Cassie-yogurt','Cassie-Rowan-Allen',
   ];
 
-  // ------------------- helpers -------------------
+  // =================== helpers ===================
   function makeVideo(src){
     const v = document.createElement('video');
     v.autoplay = true; v.muted = true; v.defaultMuted = true; v.loop = true;
     v.playsInline = true; v.setAttribute('playsinline',''); v.setAttribute('muted',''); v.setAttribute('webkit-playsinline','');
-    v.preload = 'auto'; v.crossOrigin = 'anonymous';
-    // Force immediate decode on some Safari builds:
-    v.src = src + '#t=0.001';
+    v.preload = 'auto';
+    v.src = src + '#t=0.001'; // nudge some browsers
     v.addEventListener('loadeddata', ()=> v.classList.add('ready'), {once:true});
     const tryPlay = ()=> v.play().catch(()=>{});
     v.addEventListener('canplay', tryPlay, {once:true});
@@ -84,46 +87,44 @@
     return v;
   }
 
-  // HEAD/GET probe to catch 404s and Git LFS pointers (served as text/plain)
-  async function probe(url){
-    try{
-      let res = await fetch(url, {method:'HEAD'});
-      if(!res.ok || (res.headers.get('content-type')||'').startsWith('text/plain')){
-        // Try GET if HEAD not supported by host
-        res = await fetch(url, {method:'GET', headers:{Range:'bytes=0-0'}});
-      }
-      const ok = res.ok && (res.headers.get('content-type')||'').includes('video');
-      return {ok, ct: res.headers.get('content-type')||'?', status: res.status};
-    }catch(e){ return {ok:false, ct:'-', status:'ERR'}; }
+  // If a video fails (404 or LFS pointer), retry from media.githubusercontent.com
+  function addLfsFallback(videoEl, pathFromRoot){
+    let tried = false;
+    videoEl.addEventListener('error', ()=>{
+      if (tried) return;
+      tried = true;
+      const lfsUrl = `${LFS_PREFIX}/${pathFromRoot}`;
+      videoEl.src = lfsUrl + '#t=0.001';
+    });
   }
 
   const grid = document.getElementById('grid');
 
-  (async function build(){
+  (function build(){
     for(const name of FOLDERS){
       const tile = document.createElement('div'); tile.className = 'tile';
       const badge = document.createElement('div'); badge.className = 'badge'; badge.textContent = 'missing';
       tile.appendChild(badge);
 
-      const urlInpaint = `${ROOT}/${name}/inpainted_video.mp4`;
-      const urlCropped = `${ROOT}/${name}/cropped_video.mp4`;
+      // Right = inpainted (base); Left = cropped (overlay, clipped)
+      const pathInpaint = `${name}/inpainted_video.mp4`;
+      const pathCropped = `${name}/cropped_video.mp4`;
 
-      const [pi, pc] = await Promise.all([probe(urlInpaint), probe(urlCropped)]);
-
-      // Show diagnostics in console
-      if(!pi.ok) console.warn(`[video] ${urlInpaint} not usable (status=${pi.status}, ct=${pi.ct})`);
-      if(!pc.ok) console.warn(`[video] ${urlCropped} not usable (status=${pc.status}, ct=${pc.ct})`);
-
-      if(!(pi.ok && pc.ok)){
-        tile.classList.add('error');
-        badge.textContent = (!pi.ok && !pc.ok) ? 'both missing' : (!pi.ok ? 'inpainted missing' : 'cropped missing');
-        // still append empty element to preserve grid
-        grid.appendChild(tile);
-        continue;
-      }
+      const urlInpaint = `${ROOT}/${pathInpaint}`;
+      const urlCropped = `${ROOT}/${pathCropped}`;
 
       const inpainted = makeVideo(urlInpaint);
       const cropped   = makeVideo(urlCropped); cropped.className = 'overlay';
+
+      addLfsFallback(inpainted, pathInpaint);
+      addLfsFallback(cropped,   pathCropped);
+
+      // If both ultimately error, mark tile
+      let errs = 0;
+      const markErr = ()=>{ if(++errs >= 2) tile.classList.add('error'); };
+      inpainted.addEventListener('error', markErr);
+      cropped.addEventListener('error',   markErr);
+
       tile.append(inpainted, cropped);
       grid.appendChild(tile);
     }
@@ -132,7 +133,7 @@
     requestAnimationFrame(()=>{ updateDivider(); updateClips(); });
   })();
 
-  // ------------------- global divider + clipping -------------------
+  // ========== global divider + clipping ==========
   let cutX = Math.round(window.innerWidth * 0.5);
 
   function updateDivider(){
