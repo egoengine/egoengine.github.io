@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -10,7 +10,19 @@
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:#eaeaea;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 
-  /* ZERO gaps grid */
+  /* ===== Big text logo (letters only) ===== */
+  .brand{
+    position:fixed; top:24px; left:50%; transform:translateX(-50%);
+    z-index:1002; pointer-events:none; user-select:none;
+  }
+  .brand .wordmark{
+    font-weight:900; font-size:clamp(36px,8vw,96px); line-height:1; letter-spacing:.5px;
+    background:linear-gradient(180deg,#fff,#dfe5ff);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 8px 28px rgba(0,0,0,.35);
+  }
+
+  /* ===== ZERO-gap grid ===== */
   .grid{
     display:grid; grid-template-columns:repeat(6,1fr);
     gap:0; width:100vw; max-width:100vw; margin:0 auto;
@@ -27,24 +39,29 @@
     position:absolute; inset:0; width:100%; height:100%;
     object-fit:cover; display:block; background:#000;
   }
-  /* 底层：inpainted */
-  .tile video.base   { z-index:1; }
-  /* 上层：cropped（被 clip-path 从左侧裁出）*/
-  .tile video.overlay{ z-index:2; clip-path: polygon(0 0, var(--cut,0px) 0, var(--cut,0px) 100%, 0 100%); }
+  .tile video.base{ z-index:1; } /* inpainted, right side visible */
+  .tile video.overlay{
+    z-index:2; /* cropped, revealed from the left */
+    clip-path: polygon(0 0, var(--cut,0px) 0, var(--cut,0px) 100%, 0 100%);
+    will-change:clip-path;
+  }
 
-  /* ONE global divider line */
+  /* Global divider line */
   #divider{
     position:fixed; top:0; bottom:0; left:var(--divider-x); width:2px;
-    background:var(--line); transform:translateX(-1px); pointer-events:none; z-index:999;
+    background:var(--line); transform:translateX(-1px); pointer-events:none; z-index:1001;
   }
 </style>
 </head>
 <body>
+  <!-- TEXT-ONLY LOGO -->
+  <div class="brand"><div class="wordmark">EgoEngine</div></div>
+
   <div id="divider"></div>
   <main id="grid" class="grid"></main>
 
 <script>
-  // —— 根据你的仓库结构：index.html 同级 videos/...
+  // Paths relative to index.html
   const ROOT = 'videos/blending/human';
   const FOLDERS = [
     'Cassie-bartending','Cassie-bartending2','Cassie-blinds','Cassie-boardgame','Cassie-cat2','Cassie-cat_food',
@@ -58,9 +75,7 @@
     v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true;
     v.setAttribute('muted',''); v.setAttribute('playsinline','');
     v.preload = 'auto';
-    v.src = src;            // 去掉 #t=0.001 等花活，最稳
-    v.addEventListener('error', () => console.warn('video error:', src));
-    // 尽量触发播放
+    v.src = src;
     const tryPlay = () => v.play().catch(()=>{});
     v.addEventListener('canplay', tryPlay);
     v.addEventListener('loadeddata', tryPlay);
@@ -71,7 +86,6 @@
 
   const grid = document.getElementById('grid');
 
-  // 构建 18 组 tile：底层 inpainted（右边可见）、上层 cropped（左边随分割线出现）
   (function build(){
     for(const name of FOLDERS){
       const tile = document.createElement('div'); tile.className = 'tile';
@@ -80,11 +94,10 @@
       tile.append(inpainted, cropped);
       grid.appendChild(tile);
     }
-    // 初始裁剪
     requestAnimationFrame(()=>{ updateDivider(); updateClips(); });
   })();
 
-  // —— 全局一条分割线控制所有 tile 的裁剪宽度
+  // Global swipe divider
   let cutX = Math.round(window.innerWidth * 0.5);
   function updateDivider(){
     document.documentElement.style.setProperty('--divider-x', cutX + 'px');
@@ -92,7 +105,7 @@
   function updateClips(){
     document.querySelectorAll('.tile').forEach(tile=>{
       const r = tile.getBoundingClientRect();
-      const local = Math.max(0, Math.min(r.width, cutX - r.left)); // 将全局 x 转为该 tile 的局部宽度
+      const local = Math.max(0, Math.min(r.width, cutX - r.left));
       tile.style.setProperty('--cut', local + 'px');
     });
   }
@@ -100,10 +113,10 @@
     cutX = Math.max(0, Math.min(window.innerWidth, x));
     updateDivider(); updateClips();
   }
-  window.addEventListener('mousemove', e=> setCutFrom(e.clientX));
-  window.addEventListener('touchstart', e=> e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
-  window.addEventListener('touchmove',  e=> e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
-  window.addEventListener('resize', ()=> { updateDivider(); updateClips(); });
+  window.addEventListener('mousemove', e => setCutFrom(e.clientX));
+  window.addEventListener('touchstart', e => e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
+  window.addEventListener('touchmove',  e => e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
+  window.addEventListener('resize', () => { updateDivider(); updateClips(); });
 </script>
 </body>
 </html>
