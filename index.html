@@ -10,7 +10,6 @@
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:#eaeaea;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 
-  /* Centered text logo (letters only) */
   .brand{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;pointer-events:none}
   .brand .wordmark{
     font-weight:900;font-size:clamp(42px,10vw,120px);line-height:1;
@@ -19,7 +18,6 @@
     text-shadow:0 10px 32px rgba(0,0,0,.45);
   }
 
-  /* Zero-gap grid */
   .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0;width:100vw;max-width:100vw;margin:0 auto;}
   @media (max-width:1400px){.grid{grid-template-columns:repeat(5,1fr)}}
   @media (max-width:1100px){.grid{grid-template-columns:repeat(4,1fr)}}
@@ -29,18 +27,14 @@
 
   .tile{ position:relative; aspect-ratio:1/1; overflow:hidden; background:#000; }
   .tile video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; background:#000; }
-  .tile video.base{ z-index:1; }  /* right: inpainted */
-  .tile video.overlay{
-    z-index:2; /* left: cropped (revealed by divider) */
+  .tile video.base{ z-index:1; }         /* inpainted (right side)  */
+  .tile video.overlay{ z-index:2;         /* cropped (left side)    */
     clip-path: polygon(0 0, var(--cut,0px) 0, var(--cut,0px) 100%, 0 100%);
     will-change:clip-path;
   }
 
-  /* Single global divider */
-  #divider{
-    position:fixed; top:0; bottom:0; left:var(--divider-x); width:2px;
-    background:var(--line); transform:translateX(-1px); pointer-events:none; z-index:4;
-  }
+  #divider{ position:fixed; top:0; bottom:0; left:var(--divider-x); width:2px;
+    background:var(--line); transform:translateX(-1px); pointer-events:none; z-index:4; }
 </style>
 </head>
 <body>
@@ -49,7 +43,6 @@
   <main id="grid" class="grid"></main>
 
 <script>
-  // Paths relative to index.html
   const ROOT = 'videos/blending/human';
   const FOLDERS = [
     'Cassie-bartending','Cassie-bartending2','Cassie-blinds','Cassie-boardgame','Cassie-cat2','Cassie-cat_food',
@@ -64,60 +57,76 @@
     v.setAttribute('muted',''); v.setAttribute('playsinline','');
     v.preload = 'auto';
     v.src = src;
-
-    // Best-effort auto-play on all devices
     const tryPlay = () => v.play().catch(()=>{});
     v.addEventListener('canplay', tryPlay);
     v.addEventListener('loadeddata', tryPlay);
     v.addEventListener('mouseenter', tryPlay);
     v.addEventListener('touchstart', tryPlay, {passive:true});
-
-    // Fallback: if loop hiccups, force restart
     v.addEventListener('ended', () => { v.currentTime = 0; tryPlay(); });
-
     return v;
   }
 
   const grid = document.getElementById('grid');
 
-  // Build 18 tiles: base=inpainted (right), overlay=cropped (left)
+  // Build tiles
   (function build(){
-    for(const name of FOLDERS){
+    for (const name of FOLDERS){
       const tile = document.createElement('div'); tile.className = 'tile';
-      const inpainted = makeVideo(`${ROOT}/${name}/inpainted_video.mp4`, 'base');
-      const cropped   = makeVideo(`${ROOT}/${name}/cropped_video.mp4`,   'overlay');
-      tile.append(inpainted, cropped);
+      const base = makeVideo(`${ROOT}/${name}/inpainted_video.mp4`, 'base');
+      const over = makeVideo(`${ROOT}/${name}/cropped_video.mp4`,   'overlay');
+      tile.append(base, over);
       grid.appendChild(tile);
     }
-    requestAnimationFrame(()=>{ updateDivider(); updateClips(); });
+    requestAnimationFrame(()=>{ updateDivider(); updateClips(); updatePlayback(); });
   })();
 
-  // Global swipe divider (controls all tiles)
+  // Global swipe divider
   let cutX = Math.round(window.innerWidth * 0.5);
+
   function updateDivider(){
     document.documentElement.style.setProperty('--divider-x', cutX + 'px');
   }
+
   function updateClips(){
     document.querySelectorAll('.tile').forEach(tile=>{
       const r = tile.getBoundingClientRect();
-      const local = Math.max(0, Math.min(r.width, cutX - r.left));
+      const local = Math.max(0, Math.min(r.width, cutX - r.left)); // px of overlay visible in this tile
       tile.style.setProperty('--cut', local + 'px');
     });
   }
+
+  // Play only what’s visible in each tile to keep decoders ≤ ~18
+  function setPlaying(v, shouldPlay){
+    if (!v) return;
+    if (shouldPlay) { if (v.paused) v.play().catch(()=>{}); }
+    else { if (!v.paused) v.pause(); }
+  }
+  function updatePlayback(){
+    document.querySelectorAll('.tile').forEach(tile=>{
+      const base = tile.querySelector('video.base');
+      const over = tile.querySelector('video.overlay');
+      const r = tile.getBoundingClientRect();
+      const cutLocal = Math.max(0, Math.min(r.width, cutX - r.left));
+
+      const showOver = cutLocal > 0;             // some left part shown
+      const showBase = cutLocal < r.width;       // some right part shown
+
+      setPlaying(over, showOver);
+      setPlaying(base, showBase);
+    });
+  }
+
   function setCutFrom(x){
     cutX = Math.max(0, Math.min(window.innerWidth, x));
-    updateDivider(); updateClips();
+    updateDivider(); updateClips(); updatePlayback();
   }
+
   window.addEventListener('mousemove', e => setCutFrom(e.clientX));
   window.addEventListener('touchstart', e => e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
   window.addEventListener('touchmove',  e => e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
-  window.addEventListener('resize', () => { updateDivider(); updateClips(); });
-
-  // Resume videos when tab becomes visible again
+  window.addEventListener('resize',     () => { updateDivider(); updateClips(); updatePlayback(); });
   document.addEventListener('visibilitychange', ()=>{
-    if(!document.hidden){
-      document.querySelectorAll('video').forEach(v=> v.play().catch(()=>{}));
-    }
+    if (!document.hidden) document.querySelectorAll('video').forEach(v=> v.play().catch(()=>{}));
   });
 </script>
 </body>
