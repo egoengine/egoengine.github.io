@@ -3,121 +3,83 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>EgoEngine — global swipe</title>
+<title>EgoEngine — teaser swipe</title>
 <style>
-  :root { --divider-x: 50vw; --bg:#0b0b0c; --line:rgba(255,255,255,.95); }
-  *{box-sizing:border-box}
-  html,body{height:100%}
+  :root { --divider-x: 50vw; --bg:#0b0b0c; --line: rgba(255,255,255,.95); }
+  *{box-sizing:border-box} html,body{height:100%}
   body{margin:0;background:var(--bg);color:#eaeaea;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 
-  /* ===== Centered text logo (letters only) ===== */
+  /* centered text logo */
   .brand{
-    position:fixed; inset:0;               /* full-viewport */
-    display:flex; align-items:center; justify-content:center;
-    z-index:1002; pointer-events:none; user-select:none;
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    z-index:3; pointer-events:none; user-select:none;
   }
   .brand .wordmark{
-    font-weight:900; font-size:clamp(42px,10vw,120px); line-height:1; letter-spacing:.5px;
+    font-weight:900; font-size:clamp(42px,10vw,120px); line-height:1;
     background:linear-gradient(180deg,#fff,#dfe5ff);
     -webkit-background-clip:text; background-clip:text; color:transparent;
     text-shadow:0 10px 32px rgba(0,0,0,.45);
   }
 
-  /* ===== ZERO-gap grid ===== */
-  .grid{
-    display:grid; grid-template-columns:repeat(6,1fr);
-    gap:0; width:100vw; max-width:100vw; margin:0 auto;
+  /* full-bleed stage */
+  .stage{ position:fixed; inset:0; overflow:hidden; }
+  .stage video{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#000;
   }
-  @media (max-width:1400px){.grid{grid-template-columns:repeat(5,1fr)}}
-  @media (max-width:1100px){.grid{grid-template-columns:repeat(4,1fr)}}
-  @media (max-width:900px){ .grid{grid-template-columns:repeat(3,1fr)}}
-  @media (max-width:640px){ .grid{grid-template-columns:repeat(2,1fr)}}
-  @media (max-width:420px){ .grid{grid-template-columns:1fr}}
-
-  .tile{ position:relative; aspect-ratio:1/1; overflow:hidden; background:#000; }
-
-  .tile video{
-    position:absolute; inset:0; width:100%; height:100%;
-    object-fit:cover; display:block; background:#000;
-  }
-  .tile video.base{ z-index:1; } /* inpainted, right side visible */
-  .tile video.overlay{
-    z-index:2; /* cropped, revealed from the left */
+  /* top layer (original) revealed from the left by global cut */
+  .overlay{
     clip-path: polygon(0 0, var(--cut,0px) 0, var(--cut,0px) 100%, 0 100%);
-    will-change:clip-path;
+    will-change: clip-path;
+    z-index:2;
   }
+  /* bottom layer (inpainted) */
+  .base{ z-index:1; }
 
-  /* Global divider line */
+  /* global divider line */
   #divider{
     position:fixed; top:0; bottom:0; left:var(--divider-x); width:2px;
-    background:var(--line); transform:translateX(-1px); pointer-events:none; z-index:1001;
+    background:var(--line); transform:translateX(-1px); pointer-events:none; z-index:4;
   }
 </style>
 </head>
 <body>
-  <!-- TEXT-ONLY LOGO, centered -->
   <div class="brand"><div class="wordmark">EgoEngine</div></div>
-
   <div id="divider"></div>
-  <main id="grid" class="grid"></main>
+
+  <div class="stage">
+    <!-- top: teaser_original.mp4 (left side) -->
+    <video id="orig" class="overlay" autoplay muted playsinline loop preload="auto"
+           src="videos/teaser_original.mp4"></video>
+    <!-- bottom: teaser_inpainted.mp4 (right side) -->
+    <video id="inp"  class="base"    autoplay muted playsinline loop preload="auto"
+           src="videos/teaser_inpainted.mp4"></video>
+  </div>
 
 <script>
-  // Paths relative to index.html
-  const ROOT = 'videos/blending/human';
-  const FOLDERS = [
-    'Cassie-bartending','Cassie-bartending2','Cassie-blinds','Cassie-boardgame','Cassie-cat2','Cassie-cat_food',
-    'Cassie-cooking2','Cassie-door','Cassie-earbuds','Cassie-eyedrops','Cassie-flower','Cassie-fridge',
-    'Cassie-laptop','Cassie-microwave','Cassie-oven','Cassie-subway','Cassie-yogurt','Cassie-Rowan-Allen',
-  ];
+  // kick playback (mobile/autoplay safety)
+  const vids = [document.getElementById('orig'), document.getElementById('inp')];
+  const tryPlayAll = () => vids.forEach(v => v.play().catch(()=>{}));
+  vids.forEach(v => {
+    v.addEventListener('canplay', tryPlayAll, {once:true});
+    v.addEventListener('loadeddata', tryPlayAll, {once:true});
+  });
+  window.addEventListener('touchstart', tryPlayAll, {once:true, passive:true});
 
-  function makeVideo(src, cls){
-    const v = document.createElement('video');
-    v.className = cls || '';
-    v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true;
-    v.setAttribute('muted',''); v.setAttribute('playsinline','');
-    v.preload = 'auto';
-    v.src = src;
-    const tryPlay = () => v.play().catch(()=>{});
-    v.addEventListener('canplay', tryPlay);
-    v.addEventListener('loadeddata', tryPlay);
-    v.addEventListener('mouseenter', tryPlay);
-    v.addEventListener('touchstart', tryPlay, {passive:true});
-    return v;
-  }
-
-  const grid = document.getElementById('grid');
-
-  (function build(){
-    for(const name of FOLDERS){
-      const tile = document.createElement('div'); tile.className = 'tile';
-      const inpainted = makeVideo(`${ROOT}/${name}/inpainted_video.mp4`, 'base');
-      const cropped   = makeVideo(`${ROOT}/${name}/cropped_video.mp4`,   'overlay');
-      tile.append(inpainted, cropped);
-      grid.appendChild(tile);
-    }
-    requestAnimationFrame(()=>{ updateDivider(); updateClips(); });
-  })();
-
-  // Global swipe divider
+  // one global divider for both
   let cutX = Math.round(window.innerWidth * 0.5);
   function updateDivider(){
     document.documentElement.style.setProperty('--divider-x', cutX + 'px');
-  }
-  function updateClips(){
-    document.querySelectorAll('.tile').forEach(tile=>{
-      const r = tile.getBoundingClientRect();
-      const local = Math.max(0, Math.min(r.width, cutX - r.left));
-      tile.style.setProperty('--cut', local + 'px');
-    });
+    document.documentElement.style.setProperty('--cut', cutX + 'px');
   }
   function setCutFrom(x){
     cutX = Math.max(0, Math.min(window.innerWidth, x));
-    updateDivider(); updateClips();
+    updateDivider();
   }
   window.addEventListener('mousemove', e => setCutFrom(e.clientX));
   window.addEventListener('touchstart', e => e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
   window.addEventListener('touchmove',  e => e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
-  window.addEventListener('resize', () => { updateDivider(); updateClips(); });
+  window.addEventListener('resize', updateDivider);
+  updateDivider();
 </script>
 </body>
 </html>
