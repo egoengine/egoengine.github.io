@@ -10,6 +10,7 @@
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:#eaeaea;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 
+  /* Wordmark stays below divider (z-index lower than the divider). */
   .brand{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;pointer-events:none}
   .brand .wordmark{
     font-weight:900;font-size:clamp(42px,10vw,120px);line-height:1;
@@ -18,12 +19,15 @@
     text-shadow:0 10px 32px rgba(0,0,0,.45);
   }
 
-  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:0;width:100vw;max-width:100vw;margin:0 auto;}
-  @media (max-width:1400px){.grid{grid-template-columns:repeat(5,1fr)}}
-  @media (max-width:1100px){.grid{grid-template-columns:repeat(4,1fr)}}
-  @media (max-width:900px){ .grid{grid-template-columns:repeat(3,1fr)}}
-  @media (max-width:640px){ .grid{grid-template-columns:repeat(2,1fr)}}
-  @media (max-width:420px){ .grid{grid-template-columns:1fr}}
+  /* Always 6 columns (=> 3 rows for 18 tiles), no responsive column changes */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(6, minmax(0,1fr));
+    gap:0;
+    width:100vw;
+    max-width:100vw;
+    margin:0 auto;
+  }
 
   .tile{ position:relative; aspect-ratio:1/1; overflow:hidden; background:#000; }
   .tile video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; background:#000; }
@@ -33,8 +37,14 @@
     will-change:clip-path;
   }
 
-  #divider{ position:fixed; top:0; bottom:0; left:var(--divider-x); width:2px;
-    background:var(--line); transform:translateX(-1px); pointer-events:none; z-index:4; }
+  /* Divider above everything. Remove transform (which creates its own stacking context in some browsers)
+     and place it precisely with left: calc(...). Crank z-index way up. */
+  #divider{
+    position:fixed; top:0; bottom:0;
+    left: calc(var(--divider-x) - 1px);
+    width:2px; background:var(--line);
+    pointer-events:none; z-index:9999;
+  }
 </style>
 </head>
 <body>
@@ -107,10 +117,8 @@
       const over = tile.querySelector('video.overlay');
       const r = tile.getBoundingClientRect();
       const cutLocal = Math.max(0, Math.min(r.width, cutX - r.left));
-
-      const showOver = cutLocal > 0;             // some left part shown
-      const showBase = cutLocal < r.width;       // some right part shown
-
+      const showOver = cutLocal > 0;       // some left part shown
+      const showBase = cutLocal < r.width; // some right part shown
       setPlaying(over, showOver);
       setPlaying(base, showBase);
     });
