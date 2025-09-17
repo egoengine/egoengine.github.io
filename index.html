@@ -198,46 +198,57 @@
     return v;
   }
 
-  // 与任务区一致的同步器（clock 同步 members）
-  class SyncGroup {
-    constructor(clock){
-      this.clock = clock;
-      this.members = new Set();
-      ['timeupdate','play','pause','ratechange','seeked'].forEach(ev=>{
-        clock.addEventListener(ev, this._dispatch.bind(this, ev));
-      });
-    }
-    add(v){
-      if (!v || v === this.clock || this.members.has(v)) return;
-      this.members.add(v);
-      const align = ()=> this.resyncMember(v);
-      v.addEventListener('loadeddata', align, { once:true });
-      v.addEventListener('canplay',    align, { once:true });
-      v.addEventListener('ended', ()=>{ v.currentTime = this.clock.currentTime % (v.duration||1); v.play().catch(()=>{}); });
-    }
-    resyncMember(v){
-      if (!v || v.readyState < 2 || this.clock.readyState < 2) return;
-      const drift = Math.abs(v.currentTime - this.clock.currentTime);
-      if (drift > 0.8) v.currentTime = this.clock.currentTime;
-      if (this.clock.paused) v.pause(); else v.play().catch(()=>{});
-      if (v.playbackRate !== this.clock.playbackRate) v.playbackRate = this.clock.playbackRate;
-    }
-    _dispatch(type){
-      if (type === 'timeupdate'){
-        this.members.forEach(v=>{
-          if (v.readyState < 2) return;
-          const drift = Math.abs(v.currentTime - this.clock.currentTime);
-          if (drift > 0.08) v.currentTime = this.clock.currentTime;
-        });
-      } else if (type === 'play' || type === 'pause'){
-        this.members.forEach(v=> this.clock.paused ? v.pause() : v.play().catch(()=>{}));
-      } else if (type === 'ratechange'){
-        this.members.forEach(v=> v.playbackRate = this.clock.playbackRate);
-      } else if (type === 'seeked'){
-        this.members.forEach(v=> v.currentTime = this.clock.currentTime);
-      }
-    }
+  // === REPLACE your entire SyncGroup with this one-shot version ===
+class SyncGroup {
+  constructor(clock){
+    this.clock = clock;
+    this.members = new Set();
+    this._aligned = new WeakSet(); // 记录已进行过一次性对齐的成员
+
+    // 只传播 播放/暂停/倍速（不再 timeupdate/seek 对齐）
+    clock.addEventListener('play',  () => { this._alignAllOnce(); this._propagatePlay(true); });
+    clock.addEventListener('pause', () => this._propagatePlay(false));
+    clock.addEventListener('ratechange', () => this._propagateRate());
   }
+
+  add(v){
+    if (!v || v === this.clock || this.members.has(v)) return;
+    this.members.add(v);
+
+    // 成员就绪时做一次性对齐（若 clock 已经 ready）
+    const alignOnReady = () => this._alignOnce(v);
+    v.addEventListener('loadeddata', alignOnReady, { once:true });
+    v.addEventListener('canplay',    alignOnReady, { once:true });
+
+    // 保持循环，但不再强制对齐
+    v.addEventListener('ended', ()=>{
+      v.currentTime = (this.clock.currentTime % (v.duration || 1));
+      v.play().catch(()=>{});
+    });
+  }
+
+  // 兼容你现有的调用：现在只做一次性对齐（若未对齐过）
+  resyncMember(v){ this._alignOnce(v); }
+
+  _alignOnce(v){
+    if (!v || this._aligned.has(v) || v.readyState < 2 || this.clock.readyState < 2) return;
+    v.currentTime = this.clock.currentTime;          // 仅在开始时对齐一次
+    this._aligned.add(v);
+    if (this.clock.paused) v.pause(); else v.play().catch(()=>{});
+    v.playbackRate = this.clock.playbackRate;
+  }
+
+  _alignAllOnce(){ this.members.forEach(v => this._alignOnce(v)); }
+
+  _propagatePlay(playing){
+    this.members.forEach(v => playing ? v.play().catch(()=>{}) : v.pause());
+  }
+
+  _propagateRate(){
+    this.members.forEach(v => v.playbackRate = this.clock.playbackRate);
+  }
+}
+
 
   const stage = document.getElementById('stage');
   const grid  = document.getElementById('grid');
