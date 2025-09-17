@@ -9,112 +9,124 @@
     --divider-x: 50vw;
     --bg:#0b0b0c;
     --line:rgba(255,255,255,.95);
-    --cell: calc(100vw / 6);            /* full-width cells */
+    --cell: calc(100vw / 6);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:#eaeaea;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 
-  /* ===== HERO (teaser) stays one screen tall; video inside is full-width 2:1 ===== */
-  .hero{
-    position:relative; width:100vw; height:100vh; overflow:hidden;
-  }
-  /* Stage is the exact video area at 2:1 (6×3) — centered to leave equal top/bottom gap */
+  /* ===== HERO (unchanged layout, now light-load) ===== */
+  .hero{ position:relative; width:100vw; height:100vh; overflow:hidden; }
   .stage{
     position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    width:100vw; height:calc(100vw / 2);          /* 2:1 aspect (6×3 squares) */
-    /* If your screen is ultra-wide and this would exceed height, you can clamp:
-       height:min(calc(100vw / 2), 100vh);  (optional) */
+    width:100vw; height:calc(100vw / 2);
   }
-
-  /* Wordmark over teaser only (unchanged styling) */
-  .brand{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    z-index:100; pointer-events:none;
-  }
+  .brand{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:100; pointer-events:none; }
   .brand .wordmark{
     font-weight:900; font-size:clamp(42px,10vw,120px); line-height:1;
     background:linear-gradient(180deg,#fff,#dfe5ff);
     -webkit-background-clip:text; background-clip:text; color:transparent;
     text-shadow:0 10px 32px rgba(0,0,0,.45);
   }
-
-  /* 6×3 grid of squares sized from full width */
   .grid{
     position:absolute; inset:0;
-    display:grid;
-    grid-template-columns:repeat(6, var(--cell));
-    grid-auto-rows:var(--cell);          /* 3 rows → total height = 3*cell = 50vw */
-    gap:0;
+    display:grid; grid-template-columns:repeat(6, var(--cell));
+    grid-auto-rows:var(--cell); gap:0;
   }
-
   .tile{ position:relative; overflow:hidden; background:#000; }
   .tile video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; background:#000; }
-  .tile video.base{ z-index:1; }         /* inpainted (right side)  */
-  .tile video.overlay{ z-index:2;         /* cropped (left side)    */
+  .tile video.base{ z-index:1; }
+  .tile video.overlay{ z-index:2;
     clip-path: polygon(0 0, var(--cut,0px) 0, var(--cut,0px) 100%, 0 100%);
     will-change:clip-path;
   }
+  #divider{ position:absolute; top:0; bottom:0; left: calc(var(--divider-x) - 1px);
+    width:2px; background:var(--line); pointer-events:none; z-index:2; }
 
-  /* Divider only spans the teaser video area (the stage) */
-  #divider{
-    position:absolute; top:0; bottom:0; left: calc(var(--divider-x) - 1px);
-    width:2px; background:var(--line); pointer-events:none; z-index:2;
-  }
+  /* Hide scrollbars */
+  html, body{ -ms-overflow-style:none; scrollbar-width:none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar{ width:0; height:0; background:transparent; }
 
-  /* ===== Hide both vertical & horizontal scrollbars (keep scrolling behavior) ===== */
-  html, body{
-    -ms-overflow-style: none;   /* IE/old Edge */
-    scrollbar-width: none;      /* Firefox */
+  /* ===== AFTER-HERO HEADING (unchanged look) ===== */
+  .after-hero { background:#fff; color:#111; padding:5vh 0; }
+  .fancy-title{
+    margin:5vh auto; max-width:80%; text-align:center;
+    font-size:clamp(28px,4vw,56px); font-weight:900; line-height:1.2;
+    background:linear-gradient(90deg,#2c2c54,#443377,#5a2a5a);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 4px 12px rgba(0,0,0,.2);
+    animation:title-glow 6s ease-in-out infinite alternate;
   }
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar{
-    width:0;
-    height:0;                   /* Chrome/Safari/Edge */
-    background:transparent;
-  }
-
-    .fancy-title {
-    margin: 5vh auto;
-    max-width: 80%;
-    text-align: center;
-    font-size: clamp(28px, 4vw, 56px);
-    font-weight: 900;
-    line-height: 1.2;
-    background: linear-gradient(90deg, #2c2c54, #443377, #5a2a5a);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    text-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    animation: title-glow 6s ease-in-out infinite alternate;
-  }
-
   @keyframes title-glow {
-    from {
-      text-shadow: 0 0 14px rgba(68,51,119,0.6),
-                   0 0 28px rgba(90,42,90,0.5),
-                   0 0 42px rgba(68,51,119,0.4);
-    }
-    to {
-      text-shadow: 0 0 22px rgba(90,42,90,0.8),
-                   0 0 44px rgba(68,51,119,0.7),
-                   0 0 60px rgba(90,42,90,0.6);
-    }
+    from { text-shadow:0 0 14px rgba(68,51,119,.6),0 0 28px rgba(90,42,90,.5),0 0 42px rgba(68,51,119,.4); }
+    to   { text-shadow:0 0 22px rgba(90,42,90,.8),0 0 44px rgba(68,51,119,.7),0 0 60px rgba(90,42,90,.6); }
   }
 
-
-
-  .after-hero {
-    background: #fff;
-    color: #111;
-    padding: 5vh 0;
+  /* ===== NEW: Real-World Tasks layout ===== */
+  .tasks{ max-width:min(1200px,92vw); margin:0 auto 8vh; }
+  .tasks h2{
+    font-size:clamp(22px,2.6vw,32px); margin:0 0 6px; font-weight:800;
+    letter-spacing:.2px;
   }
+  .task{ margin:32px 0 48px; }
+  .task h3{
+    margin:12px 0 18px; font-size:clamp(18px,2.2vw,24px); font-weight:800;
+  }
+  .demos{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
+    gap:16px;
+  }
+  .card{
+    background:#0f0f12; color:#eee; border:1px solid rgba(255,255,255,.08);
+    border-radius:16px; overflow:hidden; box-shadow:0 6px 24px rgba(0,0,0,.15);
+  }
+  .card .meta{
+    padding:10px 14px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid rgba(255,255,255,.06); font-size:14px; color:#bbb;
+  }
+  .dual{
+    display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:8px; background:#000;
+  }
+  .pane{
+    position:relative; width:100%;
+    aspect-ratio:16/9; background:#000; overflow:hidden; border-radius:10px;
+  }
+  .pane video{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;
+    background:#000;
+  }
+  .labels{
+    position:absolute; top:6px; left:6px; padding:3px 6px; font-size:12px;
+    background:rgba(0,0,0,.55); color:#fff; border-radius:6px; pointer-events:none;
+  }
+  details.extras{ padding:0 8px 8px; }
+  details.extras summary{
+    cursor:pointer; user-select:none; padding:10px 6px; color:#cbd3ff; font-size:14px;
+  }
+  .quad{
+    display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:6px;
+  }
+  .small .pane{ aspect-ratio:16/9; }
+  .ghost{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:12px; color:#888; background:linear-gradient(180deg,#101014,#0b0b0f);
+  }
+  .badge{
+    padding:4px 8px; border:1px solid rgba(255,255,255,.15); border-radius:999px;
+    font-size:12px; color:#999;
+  }
+  .hint{ font-size:12px; color:#7d7d7d; padding:0 14px 12px; }
 
+  /* Small screens: stack the two main panes vertically */
+  @media (max-width:560px){
+    .dual{ grid-template-columns:1fr; }
+  }
 </style>
 </head>
 <body>
 
-  <!-- TEASER / HERO -->
+  <!-- ===== HERO / TEASER ===== -->
   <section class="hero" id="hero">
     <div class="stage" id="stage">
       <div class="brand"><div class="wordmark">EgoEngine</div></div>
@@ -123,105 +135,312 @@
     </div>
   </section>
 
-<div class="after-hero">
-  <div class="fancy-title">
-    EgoEngine: From Egocentric Human Videos to High-Fidelity Dexterous Robot Demonstrations
+  <div class="after-hero">
+    <div class="fancy-title">
+      EgoEngine: From Egocentric Human Videos to High-Fidelity Dexterous Robot Demonstrations
+    </div>
+
+    <!-- ===== Real-World Tasks Section ===== -->
+    <section class="tasks" id="tasks">
+      <h2>Real-World Tasks</h2>
+      <div class="hint">Left: <strong>cropped</strong> (human foreground). Right: <strong>inpainted</strong> (robot-ready BG). All videos are time-synchronized and lazy-loaded.</div>
+
+      <!-- Mustard -->
+      <div class="task" id="task-mustard">
+        <h3>Mustard <span class="badge"></span></h3>
+        <div class="demos" id="mustard-demos"></div>
+      </div>
+
+      <!-- Drawer -->
+      <div class="task" id="task-drawer">
+        <h3>Drawer <span class="badge"></span></h3>
+        <div class="demos" id="drawer-demos"></div>
+      </div>
+    </section>
+
+    <!-- your other content below -->
+    <section id="below"><div style="height:150vh"></div></section>
   </div>
 
-  <!-- BELOW: your other content -->
-  <section id="below">
-    <div style="height:150vh"></div>
-  </section>
-
 <script>
-  const ROOT = 'videos/blending/human';
-  const FOLDERS = [
+  /* ============= HERO (light-load + per-tile sync) ============= */
+  const ROOT_HUMAN = 'videos/blending/human';
+  const FOLDERS_HUMAN = [
     'Cassie-bartending','Cassie-bartending2','Cassie-blinds','Cassie-boardgame','Cassie-cat2','Cassie-cat_food',
     'Cassie-cooking2','Cassie-door','Cassie-earbuds','Cassie-eyedrops','Cassie-flower','Cassie-fridge',
     'Cassie-laptop','Cassie-microwave','Cassie-oven','Cassie-subway','Cassie-yogurt','Cassie-Rowan-Allen',
   ];
 
-  function makeVideo(src, cls){
+  // HERO 专用懒加载观察器（只负责把 data-src → src）
+  const heroLazyObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const v = entry.target;
+      if (entry.isIntersecting && v.dataset.src && !v.src){
+        v.src = v.dataset.src;
+        v.load();
+        if (v.autoplay) v.play().catch(()=>{});
+        heroLazyObserver.unobserve(v);
+      }
+    });
+  }, { rootMargin: '200px 0px' }) : null;
+
+  // 小工具：创建轻载入视频（HERO 版）
+  function makeHeroLazyVideo(src, cls){
     const v = document.createElement('video');
     v.className = cls || '';
     v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true;
     v.setAttribute('muted',''); v.setAttribute('playsinline','');
-    v.preload = 'auto';
-    v.src = src;
-    const tryPlay = () => v.play().catch(()=>{});
-    v.addEventListener('canplay', tryPlay);
-    v.addEventListener('loadeddata', tryPlay);
-    v.addEventListener('mouseenter', tryPlay);
-    v.addEventListener('touchstart', tryPlay, {passive:true});
-    v.addEventListener('ended', () => { v.currentTime = 0; tryPlay(); });
+    v.preload = 'metadata';     // 轻载入以便拿到时长、首帧用于对齐
+    v.controls = false;
+    v.dataset.src = src;        // 等 observer 挂上
+    if (heroLazyObserver) heroLazyObserver.observe(v); else { v.src = src; }
+    v.addEventListener('ended', () => { v.currentTime = 0; v.play().catch(()=>{}); });
     return v;
+  }
+
+  // 与任务区一致的同步器（clock 同步 members）
+  class SyncGroup {
+    constructor(clock){
+      this.clock = clock;
+      this.members = new Set();
+      ['timeupdate','play','pause','ratechange','seeked'].forEach(ev=>{
+        clock.addEventListener(ev, this._dispatch.bind(this, ev));
+      });
+    }
+    add(v){
+      if (!v || v === this.clock || this.members.has(v)) return;
+      this.members.add(v);
+      const align = ()=> this.resyncMember(v);
+      v.addEventListener('loadeddata', align, { once:true });
+      v.addEventListener('canplay',    align, { once:true });
+      v.addEventListener('ended', ()=>{ v.currentTime = this.clock.currentTime % (v.duration||1); v.play().catch(()=>{}); });
+    }
+    resyncMember(v){
+      if (!v || v.readyState < 2 || this.clock.readyState < 2) return;
+      const drift = Math.abs(v.currentTime - this.clock.currentTime);
+      if (drift > 0.08) v.currentTime = this.clock.currentTime;
+      if (this.clock.paused) v.pause(); else v.play().catch(()=>{});
+      if (v.playbackRate !== this.clock.playbackRate) v.playbackRate = this.clock.playbackRate;
+    }
+    _dispatch(type){
+      if (type === 'timeupdate'){
+        this.members.forEach(v=>{
+          if (v.readyState < 2) return;
+          const drift = Math.abs(v.currentTime - this.clock.currentTime);
+          if (drift > 0.12) v.currentTime = this.clock.currentTime;
+        });
+      } else if (type === 'play' || type === 'pause'){
+        this.members.forEach(v=> this.clock.paused ? v.pause() : v.play().catch(()=>{}));
+      } else if (type === 'ratechange'){
+        this.members.forEach(v=> v.playbackRate = this.clock.playbackRate);
+      } else if (type === 'seeked'){
+        this.members.forEach(v=> v.currentTime = this.clock.currentTime);
+      }
+    }
   }
 
   const stage = document.getElementById('stage');
   const grid  = document.getElementById('grid');
 
-  // Build tiles (6×3 = 18)
-  (function build(){
-    for (const name of FOLDERS){
+  (function buildHero(){
+    for (const name of FOLDERS_HUMAN){
       const tile = document.createElement('div'); tile.className = 'tile';
-      const base = makeVideo(`${ROOT}/${name}/inpainted_video.mp4`, 'base');
-      const over = makeVideo(`${ROOT}/${name}/cropped_video.mp4`,   'overlay');
+      const base = makeHeroLazyVideo(`${ROOT_HUMAN}/${name}/inpainted_video.mp4`, 'base');
+      const over = makeHeroLazyVideo(`${ROOT_HUMAN}/${name}/cropped_video.mp4`,   'overlay');
       tile.append(base, over);
       grid.appendChild(tile);
+
+      // 每个 tile 自己的同步（用 overlay 作为 clock，或 base 均可）
+      const group = new SyncGroup(over);
+      group.add(base);
+      // 首次可播放时再对齐一次
+      const trySync = ()=>{ group.resyncMember(base); };
+      over.addEventListener('loadeddata', trySync, { once:true });
+      base.addEventListener('loadeddata', trySync, { once:true });
     }
     requestAnimationFrame(()=>{ updateDivider(); updateClips(); updatePlayback(); });
   })();
 
-  // Divider control (scoped to stage)
+  // HERO 的分割线 & 解码负载控制（保持你的逻辑）
   let cutX = Math.round(window.innerWidth * 0.5);
-
-  function updateDivider(){
-    stage.style.setProperty('--divider-x', cutX + 'px');
-  }
-
+  function updateDivider(){ stage.style.setProperty('--divider-x', cutX + 'px'); }
   function updateClips(){
     document.querySelectorAll('.tile').forEach(tile=>{
       const r = tile.getBoundingClientRect();
-      const local = Math.max(0, Math.min(r.width, cutX - r.left)); // px of overlay visible in this tile
+      const local = Math.max(0, Math.min(r.width, cutX - r.left));
       tile.style.setProperty('--cut', local + 'px');
     });
   }
-
-  // Keep decoders down by pausing off-screen halves
-  function setPlaying(v, shouldPlay){
-    if (!v) return;
-    if (shouldPlay) { if (v.paused) v.play().catch(()=>{}); }
-    else { if (!v.paused) v.pause(); }
-  }
+  function setPlaying(v, shouldPlay){ if (!v) return; shouldPlay ? v.play().catch(()=>{}) : v.pause(); }
   function updatePlayback(){
     document.querySelectorAll('.tile').forEach(tile=>{
       const base = tile.querySelector('video.base');
       const over = tile.querySelector('video.overlay');
       const r = tile.getBoundingClientRect();
       const cutLocal = Math.max(0, Math.min(r.width, cutX - r.left));
-      const showOver = cutLocal > 0;
-      const showBase = cutLocal < r.width;
-      setPlaying(over, showOver);
-      setPlaying(base, showBase);
+      setPlaying(over, cutLocal > 0);
+      setPlaying(base, cutLocal < r.width);
     });
   }
-
   function setCutFrom(x){
     const bounds = stage.getBoundingClientRect();
     const clamped = Math.max(bounds.left, Math.min(bounds.right, x));
-    cutX = clamped;
-    updateDivider(); updateClips(); updatePlayback();
+    cutX = clamped; updateDivider(); updateClips(); updatePlayback();
   }
-
-  // Only track pointer over the teaser video area
   stage.addEventListener('mousemove', e => setCutFrom(e.clientX));
   stage.addEventListener('touchstart', e => e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
   stage.addEventListener('touchmove',  e => e.touches[0] && setCutFrom(e.touches[0].clientX), {passive:true});
-
   window.addEventListener('resize', () => { updateDivider(); updateClips(); updatePlayback(); });
-  document.addEventListener('visibilitychange', ()=>{
-    if (!document.hidden) document.querySelectorAll('video').forEach(v=> v.play().catch(()=>{}));
-  });
+  document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) document.querySelectorAll('video').forEach(v=> v.play().catch(()=>{})); });
+
+  /* ============= NEW: Real-World Tasks ============= */
+  const ROOT_ROBOT = 'videos/blending'; // base
+  const TASKS = [
+    { key:'mustard', label:'Mustard', ids:[1,2,3,4] },
+    { key:'drawer',  label:'Drawer',  ids:[1,2,3,4] },
+  ];
+
+  // —— 懒加载观察器（任务区）——
+  const lazyObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const v = entry.target;
+      if (entry.isIntersecting && v.dataset.src && !v.src){
+        v.src = v.dataset.src;
+        v.load();
+        if (v.autoplay) v.play().catch(()=>{});
+        lazyObserver.unobserve(v);
+      }
+    });
+  }, { rootMargin: '200px 0px' }) : null;
+
+  // —— 视口播放/暂停（任务区）——
+  const playObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const v = entry.target;
+      if (!v) return;
+      if (entry.isIntersecting){
+        const group = v.closest('.card')?.syncGroup;
+        if (group) group.resyncMember(v); // 进入视口时对齐时间戳
+        if (v.autoplay) v.play().catch(()=>{});
+      } else {
+        v.pause();
+      }
+    });
+  }, { threshold: 0.2 }) : null;
+
+  // 任务区视频：统一懒加载 & 出视口暂停
+  function makeLazyVideo(src, cls, role, demoId){
+    const v = document.createElement('video');
+    v.className = cls || '';
+    v.dataset.role = role || '';
+    v.dataset.demoId = demoId || '';
+    v.muted = true; v.autoplay = true; v.loop = true; v.playsInline = true;
+    v.setAttribute('muted',''); v.setAttribute('playsinline','');
+    v.preload = 'none';
+    v.controls = false;
+    v.dataset.src = src;
+    if (lazyObserver) lazyObserver.observe(v); else { v.src = src; }
+    if (playObserver) playObserver.observe(v);
+    v.addEventListener('ended', ()=>{ v.currentTime = 0; v.play().catch(()=>{}); });
+    return v;
+  }
+
+  // 任务区也用同一个同步器类（上面已定义）
+  function buildCard(taskKey, id){
+    const base = `${ROOT_ROBOT}/${taskKey}/${id}`;
+    const card = document.createElement('div'); card.className = 'card';
+
+    const meta = document.createElement('div'); meta.className = 'meta';
+    meta.innerHTML = `<span>#${id}</span><span>${taskKey}</span>`;
+    card.appendChild(meta);
+
+    // main two videos
+    const dual = document.createElement('div'); dual.className = 'dual';
+    const leftPane  = document.createElement('div'); leftPane.className = 'pane';
+    const rightPane = document.createElement('div'); rightPane.className = 'pane';
+
+    const vCropped   = makeLazyVideo(`${base}/cropped_video.mp4`, 'v v-cropped', 'cropped', id);
+    const vInpainted = makeLazyVideo(`${base}/inpainted_video.mp4`, 'v v-inpainted', 'inpainted', id);
+
+    leftPane.append(vCropped);  leftPane.appendChild(labelEl('Cropped'));
+    rightPane.append(vInpainted); rightPane.appendChild(labelEl('Inpainted'));
+    dual.append(leftPane, rightPane);
+    card.appendChild(dual);
+
+    // sync group using cropped as clock
+    const group = new SyncGroup(vCropped);
+    group.add(vInpainted);
+    card.syncGroup = group;
+
+    // collapsible extras (mask + removed)
+    const det = document.createElement('details'); det.className = 'extras';
+    const sum = document.createElement('summary'); sum.textContent = 'Mask & Background';
+    det.appendChild(sum);
+
+    const quad = document.createElement('div'); quad.className = 'quad small';
+    const p1 = document.createElement('div'); p1.className = 'pane';
+    const p2 = document.createElement('div'); p2.className = 'pane';
+
+    // placeholders until opened (keeps DOM light)
+    p1.appendChild(ghostEl('mask_5.mp4'));
+    p2.appendChild(ghostEl('removed_w_mask_5.mp4'));
+    quad.append(p1, p2);
+    det.appendChild(quad);
+    card.appendChild(det);
+
+    // when toggled
+    det.addEventListener('toggle', ()=>{
+      // 关闭：释放资源（卸载 src、释放解码器，同时把地址放回 data-src 以便下次懒加载）
+      if (!det.open) {
+        [p1, p2].forEach(p=>{
+          const v = p.querySelector('video');
+          if (!v) return;
+          v.pause();
+          const src = v.src || v.dataset.src || '';
+          v.removeAttribute('src');
+          v.load();                 // 释放 decoder
+          v.dataset.src = src;      // 保留路径，供下次重新懒加载
+          // 重新注册懒加载和出视口暂停观察
+          if (lazyObserver) lazyObserver.observe(v);
+          if (playObserver) playObserver.observe(v);
+        });
+        return;
+      }
+
+      // 打开：首次创建并加入同步
+      if (!p1.dataset.loaded) {
+        p1.dataset.loaded = '1'; p2.dataset.loaded = '1';
+        p1.innerHTML = ''; p2.innerHTML = '';
+        const vMask    = makeLazyVideo(`${base}/mask_5.mp4`, 'v v-mask', 'mask', id);
+        const vRemoved = makeLazyVideo(`${base}/removed_w_mask_5.mp4`, 'v v-removed', 'removed', id);
+        p1.append(vMask);  p1.appendChild(labelEl('Mask'));
+        p2.append(vRemoved); p2.appendChild(labelEl('Removed BG'));
+
+        group.add(vMask); group.add(vRemoved);
+        const trySync = ()=>{ group.resyncMember(vMask); group.resyncMember(vRemoved); };
+        vMask.addEventListener('loadeddata', trySync, { once:true });
+        vRemoved.addEventListener('loadeddata', trySync, { once:true });
+        trySync();
+      }
+    });
+
+    return card;
+  }
+
+  function labelEl(text){
+    const l = document.createElement('div'); l.className = 'labels'; l.textContent = text; return l;
+  }
+  function ghostEl(text){
+    const g = document.createElement('div'); g.className = 'ghost'; g.textContent = text; return g;
+  }
+
+  function buildTasks(){
+    const mustardWrap = document.getElementById('mustard-demos');
+    const drawerWrap  = document.getElementById('drawer-demos');
+    TASKS[0].ids.forEach(id => mustardWrap.appendChild(buildCard('mustard', id)));
+    TASKS[1].ids.forEach(id => drawerWrap.appendChild(buildCard('drawer',  id)));
+  }
+  buildTasks();
 </script>
 </body>
 </html>
