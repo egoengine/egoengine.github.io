@@ -34,7 +34,7 @@ def main():
     processed, missing = 0, 0
     for task, ids in TASKS.items():
         for i in ids:
-            in_file = ROOT / task / str(i) / "inpainted_video.mp4"
+            in_file = ROOT / task / str(i) / "removed_w_mask_5.mp4"
             if not in_file.exists():
                 print(f"[skip] not found: {in_file}")
                 missing += 1
