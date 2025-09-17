@@ -95,24 +95,43 @@ const INPAINTED = [
   ...[1,2,3,4].map(i => `${ROOT}/mustard/${i}/inpainted_video.mp4`),
   ...[1,2,3,4].map(i => `${ROOT}/drawer/${i}/inpainted_video.mp4`),
 ];
+
+// REAL: 8 total (mustard + drawer)
 const REAL = [
   `${ROOT}/mustard/real/mustard1.mp4`,
   `${ROOT}/mustard/real/mustard2.mp4`,
   `${ROOT}/mustard/real/mustard3.mp4`,
   `${ROOT}/mustard/real/mustard4.mp4`,
-  // add drawer reals here when available
+  `${ROOT}/drawer/real/drawer1.mp4`,
+  `${ROOT}/drawer/real/drawer2.mp4`,
+  `${ROOT}/drawer/real/drawer3.mp4`,
+  `${ROOT}/drawer/real/drawer4.mp4`,
 ];
+
 const N_TRIALS = 10;
 const CLIP_LEN = 0.5;  // 0.5s per your request
 
-/* ---------- Build a 10-item deck (unique sources) ---------- */
+/* ---------- Build a 10-item deck (5 real + 5 synthetic, with replacement allowed) ---------- */
 function buildDeck(){
-  const pool = [
-    ...REAL.map(p => ({path:p, truth:'real'})),
-    ...INPAINTED.map(p => ({path:p, truth:'synthetic'})),
-  ];
-  for (let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
-  return pool.slice(0, N_TRIALS);
+  const nPerClass = Math.floor(N_TRIALS / 2); // 5 each for 10 trials
+
+  // sample with replacement so we always reach 5 per class (and can re-use the same file for multiple, different windows)
+  const pickWithReplacement = (arr, n) => {
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(arr[Math.floor(Math.random() * arr.length)]);
+    return out;
+  };
+
+  const realCards  = pickWithReplacement(REAL, nPerClass).map(p => ({ path:p, truth:'real' }));
+  const synthCards = pickWithReplacement(INPAINTED, nPerClass).map(p => ({ path:p, truth:'synthetic' }));
+
+  const deck = realCards.concat(synthCards);
+  // shuffle final order
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck; // length == 10
 }
 
 /* ---------- State & elements ---------- */
@@ -191,7 +210,7 @@ async function nextTrial(){
     const onMeta = ()=>{
       v.removeEventListener('loadedmetadata', onMeta);
       const d = Math.max(0, v.duration || 0);
-      startT = pickStartWithin(d);
+      startT = pickStartWithin(d); // choose a fresh random 0.5s window for THIS trial
       resolve();
     };
     v.addEventListener('loadedmetadata', onMeta, { once:true });
