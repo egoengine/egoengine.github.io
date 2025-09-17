@@ -218,7 +218,7 @@
     resyncMember(v){
       if (!v || v.readyState < 2 || this.clock.readyState < 2) return;
       const drift = Math.abs(v.currentTime - this.clock.currentTime);
-      if (drift > 0.08) v.currentTime = this.clock.currentTime;
+      if (drift > 0.5) v.currentTime = this.clock.currentTime;
       if (this.clock.paused) v.pause(); else v.play().catch(()=>{});
       if (v.playbackRate !== this.clock.playbackRate) v.playbackRate = this.clock.playbackRate;
     }
@@ -227,7 +227,7 @@
         this.members.forEach(v=>{
           if (v.readyState < 2) return;
           const drift = Math.abs(v.currentTime - this.clock.currentTime);
-          if (drift > 0.12) v.currentTime = this.clock.currentTime;
+          if (drift > 0.08) v.currentTime = this.clock.currentTime;
         });
       } else if (type === 'play' || type === 'pause'){
         this.members.forEach(v=> this.clock.paused ? v.pause() : v.play().catch(()=>{}));
