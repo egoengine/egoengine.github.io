@@ -414,7 +414,7 @@
         const vMask    = makeLazyVideo(`${base}/mask_5.mp4`, 'v v-mask', 'mask', id);
         const vRemoved = makeLazyVideo(`${base}/removed_w_mask_5.mp4`, 'v v-removed', 'removed', id);
         p1.append(vMask);  p1.appendChild(labelEl('Mask'));
-        p2.append(vRemoved); p2.appendChild(labelEl('Removed BG'));
+        p2.append(vRemoved); p2.appendChild(labelEl('Removed hands'));
 
         group.add(vMask); group.add(vRemoved);
         const trySync = ()=>{ group.resyncMember(vMask); group.resyncMember(vRemoved); };
