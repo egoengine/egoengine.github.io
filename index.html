@@ -118,6 +118,39 @@
   }
   .hint{ font-size:12px; color:#7d7d7d; padding:0 14px 12px; }
 
+  .real-caption{
+    padding:8px 14px; font-size:14px; color:#bbb; border-top:1px solid rgba(255,255,255,.06);
+  }
+
+  /* ==== Real Robot Demos: 4-in-a-row under each task ==== */
+  .subhead{
+    margin: 10px 2px 8px;
+    font-size:14px; font-weight:700;
+    color:#9aa4ff;              /* darker than #cbd3ff */
+    letter-spacing:.2px;
+  }
+  .real-block{
+    background:#000;            /* match the inpainted dual's black panel */
+    border-radius:16px;
+    padding:8px;
+    margin:12px 0 32px; 
+  }
+  .real-row{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr)); /* exactly 4 in one line */
+    gap:4px;                      /* match .dual gap */
+    overflow:hidden;
+  }
+  .real-row .pane{
+    height:clamp(110px, 18vw, 160px);
+    border-radius:10px;
+    background:#000; position:relative; overflow:hidden;
+  }
+  .real-row .pane video{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  }
+
+
   /* Small screens: stack the two main panes vertically */
   @media (max-width:560px){
     .dual{ grid-template-columns:1fr; }
@@ -143,7 +176,7 @@
     <!-- ===== Real-World Tasks Section ===== -->
     <section class="tasks" id="tasks">
       <h2>Real-World Tasks</h2>
-      <div class="hint">Left: <strong>cropped</strong> (human foreground). Right: <strong>inpainted</strong> (robot-ready BG). All videos are time-synchronized and lazy-loaded.</div>
+      <div class="hint">Left: <strong>original</strong> (human foreground). Right: <strong>inpainted</strong> (robot foreground).</div>
 
       <!-- Mustard -->
       <div class="task" id="task-mustard">
@@ -451,7 +484,92 @@ class SyncGroup {
     TASKS[0].ids.forEach(id => mustardWrap.appendChild(buildCard('mustard', id)));
     TASKS[1].ids.forEach(id => drawerWrap.appendChild(buildCard('drawer',  id)));
   }
+
+    /* ==== Real Robot Demos (per task, 4-in-a-row) ==== */
+  /* Map both tasks here. Update file names/paths as you add reals. */
+  const REAL_DEMOS = {
+    mustard: { root: 'videos/blending/mustard/real', files: ['mustard1.mp4','mustard2.mp4','mustard3.mp4','mustard4.mp4'] },
+    drawer:  { root: 'videos/blending/drawer/real',  files: ['drawer1.mp4','drawer2.mp4','drawer3.mp4','drawer4.mp4'] }, // rename to your actual files
+  };
+
+  /* Release logic (uses your existing lazyObserver & playObserver) */
+  const releaseTimeoutMs = 8000;
+  const offscreenTimers = new WeakMap();
+  function unloadVideo(v){
+    try{
+      v.pause();
+      const src = v.src || v.dataset.src || '';
+      v.removeAttribute('src');
+      v.load();               // release decoder
+      v.dataset.src = src;    // keep path for re-lazyload
+      if (lazyObserver) lazyObserver.observe(v);
+      if (playObserver) playObserver.observe(v);
+    }catch(_){}
+  }
+  const releaseObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const v = entry.target; if (!v) return;
+      if (entry.isIntersecting){
+        const t = offscreenTimers.get(v); if (t) { clearTimeout(t); offscreenTimers.delete(v); }
+      }else{
+        const prev = offscreenTimers.get(v); if (prev) clearTimeout(prev);
+        const tid = setTimeout(()=>{ unloadVideo(v); offscreenTimers.delete(v); }, releaseTimeoutMs);
+        offscreenTimers.set(v, tid);
+      }
+    });
+  }, { threshold: 0.0 }) : null;
+
+  function buildRealRow(taskKey, cfg){
+    const taskEl = document.getElementById(`task-${taskKey}`);
+    if (!taskEl) return;
+
+    // Black block wrapper
+    const block = document.createElement('div');
+    block.className = 'real-block';
+
+    // Title INSIDE the block
+    const sub = document.createElement('div');
+    sub.className = 'subhead';
+    sub.textContent = 'Real Robot Demos';
+    block.appendChild(sub);
+
+    // Row of 4 inside the block
+    const row = document.createElement('div');
+    row.className = 'real-row';
+    row.id = `${taskKey}-real-row`;
+
+    (cfg.files || []).forEach((f, i) => {
+      const pane = document.createElement('div'); pane.className = 'pane mini';
+      const v = makeLazyVideo(`${cfg.root}/${f}`, 'v v-real', `${taskKey}-real`, i+1);
+      pane.appendChild(v);
+      pane.appendChild(labelEl(`#${i+1}`));
+      row.appendChild(pane);
+      if (releaseObserver) releaseObserver.observe(v);
+    });
+
+    block.appendChild(row);
+
+    // Insert at TOP of the task (right after <h3>, before .demos)
+    const h3 = taskEl.querySelector('h3');
+    if (h3){
+      h3.insertAdjacentElement('afterend', block);
+    } else {
+      taskEl.prepend(block);
+    }
+  }
+
+
+  /* Build rows for all configured tasks */
+  function buildRealRows(){
+    Object.entries(REAL_DEMOS).forEach(([key, cfg])=>{
+      if (cfg.files && cfg.files.length) buildRealRow(key, cfg);
+    });
+  }
+
+
   buildTasks();
+  buildRealRows();
+
 </script>
 </body>
 </html>
