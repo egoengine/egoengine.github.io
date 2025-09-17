@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Real or Not</title>
+<style>
+  :root{ --bg:#0b0b0c; --card:#101014; --ink:#e9ecff; }
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:min(900px,92vw);margin:4vh auto 10vh}
+  h1{margin:0 0 10px;font-size:clamp(22px,4vw,32px)}
+  .muted{color:#acb2d9}
+  .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:16px}
+  .row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .pill{padding:6px 10px;border:1px solid rgba(255,255,255,.1);border-radius:999px;font-size:13px;color:#cbd3ff}
+
+  /* Video: width fixed to 256px, 16:9 pane; square sources are cropped (like other vids) */
+  .board{margin:14px 0;display:flex;justify-content:center}
+  .pane{
+    position:relative;width:256px;aspect-ratio:16/9;
+    background:#000;border-radius:12px;overflow:hidden;
+  }
+  .pane > video{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover; /* crop to 16:9 like the rest of your site */
+    display:block;background:#000;border-radius:12px;
+  }
+
+  /* Fully black overlay AFTER playback */
+  .pane.dim::after{
+    content:""; position:absolute; inset:0; border-radius:12px;
+    background:#000; pointer-events:none; z-index:2;
+  }
+
+  /* Big choices BELOW the video; hidden while playing */
+  .choices{display:flex;justify-content:center;gap:18px;margin-top:16px}
+  .choice{
+    appearance:none;border:1px solid rgba(255,255,255,.2);
+    background:#1b1e2a;color:#e8eaff;border-radius:16px;cursor:pointer;
+    font-weight:900;font-size:26px;line-height:1; padding:18px 28px;
+    min-width:220px;text-transform:uppercase;
+    box-shadow:0 6px 20px rgba(0,0,0,.25);
+  }
+  .choice.real{background:#2b3551}
+  .choice.synth{background:#33264f}
+  .choice:disabled{opacity:.5;cursor:not-allowed}
+
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  button{
+    appearance:none;border:1px solid rgba(255,255,255,.12);background:#17181d;color:#e8eaff;
+    padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700
+  }
+  button:disabled{opacity:.45;cursor:not-allowed}
+
+  .footer{margin-top:14px;color:#8e94c9;font-size:13px}
+  .result{margin-top:10px;font-weight:800}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Real or Not</h1>
+  <div class="muted">You’ll see a 0.5-second clip (256 px wide, cropped to 16:9 like the other videos). Decide if it’s <strong>Real</strong> (real robot) or <strong>Synthetic</strong> (inpainted). 10 different clips. No replays. Score shown at the end.</div>
+
+  <div class="card">
+    <div class="row">
+      <div class="pill" id="status">Trial 0/10</div>
+      <div class="pill" style="visibility:hidden"> </div>
+    </div>
+
+    <div class="board">
+      <div class="pane" id="pane"><video id="clip" muted playsinline preload="metadata"></video></div>
+    </div>
+
+    <!-- Big buttons appear only AFTER playback finishes -->
+    <div class="choices" id="choices" hidden>
+      <button class="choice real"  id="btnReal"  disabled>Real</button>
+      <button class="choice synth" id="btnSynth" disabled>Synthetic</button>
+    </div>
+
+    <div class="controls">
+      <button id="btnStart">Start</button>
+      <button id="btnReset" disabled>Play Again</button>
+    </div>
+
+    <div id="msg" class="result"></div>
+    <div class="footer">Shortcuts: <span class="pill">R</span> = Real, <span class="pill">S</span> = Synthetic</div>
+  </div>
+</div>
+
+<script>
+/* ---------- CONFIG ---------- */
+const ROOT = '../videos/blending';
+const INPAINTED = [
+  ...[1,2,3,4].map(i => `${ROOT}/mustard/${i}/inpainted_video.mp4`),
+  ...[1,2,3,4].map(i => `${ROOT}/drawer/${i}/inpainted_video.mp4`),
+];
+const REAL = [
+  `${ROOT}/mustard/real/mustard1.mp4`,
+  `${ROOT}/mustard/real/mustard2.mp4`,
+  `${ROOT}/mustard/real/mustard3.mp4`,
+  `${ROOT}/mustard/real/mustard4.mp4`,
+  // add drawer reals here when available
+];
+const N_TRIALS = 10;
+const CLIP_LEN = 0.5;  // 0.5s per your request
+
+/* ---------- Build a 10-item deck (unique sources) ---------- */
+function buildDeck(){
+  const pool = [
+    ...REAL.map(p => ({path:p, truth:'real'})),
+    ...INPAINTED.map(p => ({path:p, truth:'synthetic'})),
+  ];
+  for (let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  return pool.slice(0, N_TRIALS);
+}
+
+/* ---------- State & elements ---------- */
+let deck=[], trial=0, score=0, truth=null, startT=0;
+const v = document.getElementById('clip');
+const pane = document.getElementById('pane');
+const elStatus = document.getElementById('status');
+const elMsg    = document.getElementById('msg');
+const choices  = document.getElementById('choices');
+const btnReal  = document.getElementById('btnReal');
+const btnSynth = document.getElementById('btnSynth');
+const btnStart = document.getElementById('btnStart');
+const btnReset = document.getElementById('btnReset');
+
+function updateHud(){ elStatus.textContent = `Trial ${Math.min(trial, N_TRIALS)}/${N_TRIALS}`; }
+function showChoices(on){ choices.hidden = !on; btnReal.disabled = !on; btnSynth.disabled = !on; }
+function dimPane(on){ pane.classList.toggle('dim', !!on); }
+function pickStartWithin(d){ if (!isFinite(d) || d <= CLIP_LEN + 0.05) return 0; return Math.random()*(d-(CLIP_LEN+0.02)); }
+
+async function playOneSecond(){
+  // hide buttons while playing
+  showChoices(false);
+  dimPane(false);
+
+  return new Promise(async resolve=>{
+    try{
+      v.currentTime = startT;
+      await v.play();
+      function tick(){
+        if (v.currentTime >= startT + CLIP_LEN - 0.01){
+          v.pause();                  // keep last frame
+          v.removeEventListener('timeupdate', tick);
+          dimPane(true);              // black AFTER playback
+          showChoices(true);          // then show big buttons
+          resolve();
+        }
+      }
+      v.addEventListener('timeupdate', tick);
+    }catch(_){
+      setTimeout(()=>{ try{v.pause();}catch(_){} dimPane(true); showChoices(true); resolve(); }, 500);
+    }
+  });
+}
+
+function recordAnswer(ans){
+  if (ans === truth) score += 1;
+  showChoices(false);
+  // go straight to next clip (no Next button)
+  setTimeout(nextTrial, 120);
+}
+
+async function nextTrial(){
+  showChoices(false);
+
+  try { v.pause(); } catch(_) {}
+  dimPane(false);                  // clear black BEFORE loading next clip
+
+  // Advance trial counter now (1..10)
+  trial += 1;
+  updateHud();
+  elMsg.textContent = '';
+
+  // Finished?
+  if (trial > N_TRIALS){
+    dimPane(true);                 // keep last one black
+    elMsg.innerHTML = `Your score is: <strong>${score}/${N_TRIALS}</strong>`;
+    btnReset.disabled = false;
+    return;
+  }
+
+  // Pull next card
+  const card = deck[trial-1];
+  truth = card.truth;
+
+  await new Promise(resolve=>{
+    const onMeta = ()=>{
+      v.removeEventListener('loadedmetadata', onMeta);
+      const d = Math.max(0, v.duration || 0);
+      startT = pickStartWithin(d);
+      resolve();
+    };
+    v.addEventListener('loadedmetadata', onMeta, { once:true });
+    v.src = card.path; v.load();
+  });
+
+  await playOneSecond();
+}
+
+function resetGame(){
+  deck = buildDeck();
+  trial = 0; score = 0; truth = null; startT = 0;
+  try { v.pause(); } catch(_) {}
+  dimPane(false); showChoices(false); elMsg.textContent = '';
+  btnReset.disabled = true; btnStart.disabled = false;
+  updateHud();
+}
+
+/* ---------- UI wiring ---------- */
+btnStart.addEventListener('click', async ()=>{
+  btnStart.disabled = true;
+  await nextTrial();  // nextTrial sets trial=1 and starts playback
+});
+btnReset.addEventListener('click', resetGame);
+
+btnReal .addEventListener('click', ()=>recordAnswer('real'));
+btnSynth.addEventListener('click', ()=>recordAnswer('synthetic'));
+
+document.addEventListener('keydown', (e)=>{
+  if ((e.key==='r'||e.key==='R') && !btnReal.disabled){ btnReal.click(); }
+  else if ((e.key==='s'||e.key==='S') && !btnSynth.disabled){ btnSynth.click(); }
+});
+
+resetGame();
+</script>
+</body>
+</html>
