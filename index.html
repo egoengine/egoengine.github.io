@@ -137,9 +137,15 @@
   }
   .real-row{
     display:grid;
-    grid-template-columns:repeat(4, minmax(0, 1fr)); /* exactly 4 in one line */
+    grid-template-columns:repeat(4, minmax(140px, 1fr)); /* exactly 4 in one line */
+    grid-auto-flow:column;
+    grid-auto-columns:minmax(140px, 1fr);
     gap:4px;                      /* match .dual gap */
     overflow:hidden;
+  }
+  .real-row{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
   }
   .real-row .pane{
     height:clamp(110px, 18vw, 160px);
