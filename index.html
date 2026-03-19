@@ -394,6 +394,15 @@ class TightSyncGroup {
     this.members.forEach(toStart);
     this._syncing = false;
   }
+
+  // Backward-compatible API: old callsites may still use syncAll(...)
+  syncAll(forcePlay = false){
+    this.resetAll();
+    if (forcePlay){
+      this.clock.play().catch(()=>{});
+      this.members.forEach(v => v.play().catch(()=>{}));
+    }
+  }
 }
 
 
@@ -522,6 +531,7 @@ class TightSyncGroup {
 
   function makeTacoVideo(src){
     const v = document.createElement('video');
+    let retried = false;
     v.muted = true; v.autoplay = true; v.loop = true; v.playsInline = true;
     v.setAttribute('muted',''); v.setAttribute('playsinline','');
     v.preload = 'none';
@@ -529,6 +539,18 @@ class TightSyncGroup {
     v.dataset.src = src;
     if (lazyObserver) lazyObserver.observe(v); else { v.src = src; }
     v.addEventListener('ended', ()=>{ v.currentTime = 0; v.play().catch(()=>{}); });
+    // Some browsers occasionally stall a lazy video decode; retry once.
+    v.addEventListener('stalled', ()=>{
+      if (retried || !v.dataset.src) return;
+      retried = true;
+      const keep = v.dataset.src;
+      v.pause();
+      v.removeAttribute('src');
+      v.load();
+      v.src = keep;
+      v.load();
+      if (v.autoplay) v.play().catch(()=>{});
+    });
     return v;
   }
 
@@ -687,7 +709,7 @@ class TightSyncGroup {
           if (!group) return;
           const vids = Array.from(slide.querySelectorAll('video'));
           if (entry.isIntersecting){
-            group.syncAll(true);
+            group.resetAll();
             vids.forEach(v => v.play().catch(()=>{}));
           } else {
             vids.forEach(v => v.pause());
