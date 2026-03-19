@@ -150,6 +150,45 @@
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
   }
 
+  /* ===== TACO Visualization (scrollable, snap) ===== */
+  .taco-section{
+    max-width:min(1400px, 92vw);
+    margin:0 auto 10vh;
+  }
+  .taco-section h2{
+    font-size:clamp(22px,2.6vw,32px); margin:0 0 6px; font-weight:800;
+    letter-spacing:.2px;
+  }
+  .taco-track{
+    display:flex; gap:0; overflow-x:auto; padding:12px 0 8px;
+    scroll-snap-type:x mandatory; scroll-behavior:smooth;
+    scroll-padding-inline:0;
+  }
+  .taco-track::-webkit-scrollbar{ height:8px; }
+  .taco-track::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.2); border-radius:999px; }
+  .taco-slide{
+    flex:0 0 100%;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+    background:#0f0f12; border:1px solid rgba(255,255,255,.08);
+    border-radius:18px; padding:14px; box-shadow:0 6px 24px rgba(0,0,0,.15);
+  }
+  .taco-task-row{
+    display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px;
+    margin:2px 0 8px; align-items:center;
+  }
+  .taco-task-title{
+    font-size:13px; font-weight:700; color:#cbd3ff; text-align:center;
+    padding:4px 6px; background:rgba(255,255,255,.06); border-radius:8px;
+  }
+  .taco-row{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
+  .taco-pane{ position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; }
+  .taco-pane video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .taco-label{
+    position:absolute; top:6px; left:6px; padding:3px 6px; font-size:12px;
+    background:rgba(0,0,0,.55); color:#fff; border-radius:6px; pointer-events:none;
+  }
+
 
   /* Small screens: stack the two main panes vertically */
   @media (max-width:560px){
@@ -232,6 +271,12 @@
       </div>
     </section>
 
+    <section class="taco-section" id="taco">
+      <h2>TACO Visualization</h2>
+      <div class="hint">Scroll to move between tasks. Each task shows Human Video → Digital Twin → EgoEngine Demo.</div>
+      <div class="taco-track" id="taco-track"></div>
+    </section>
+
     <!-- your other content below -->
     <section id="below"><div style="height:150vh"></div></section>
   </div>
@@ -264,7 +309,7 @@
     v.className = cls || '';
     v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true;
     v.setAttribute('muted',''); v.setAttribute('playsinline','');
-    v.preload = 'metadata';     // 轻载入以便拿到时长、首帧用于对齐
+  v.preload = 'none';         // 严格懒加载：不预取视频数据
     v.controls = false;
     v.dataset.src = src;        // 等 observer 挂上
     if (heroLazyObserver) heroLazyObserver.observe(v); else { v.src = src; }
@@ -304,6 +349,49 @@ class SyncGroup {
 
   _propagateRate(){
     this.members.forEach(v => v.playbackRate = this.clock.playbackRate);
+  }
+}
+
+// === Tight sync group (per-frame alignment for 3-video TACO sets) ===
+class TightSyncGroup {
+  constructor(clock){
+    this.clock = clock;
+    this.members = new Set();
+    this._syncing = false;
+
+    const sync = ()=> this.syncAll();
+    clock.addEventListener('play', sync);
+    clock.addEventListener('pause', sync);
+    clock.addEventListener('seeked', sync);
+    clock.addEventListener('ratechange', ()=> this._propagateRate());
+    clock.addEventListener('timeupdate', sync);
+  }
+
+  add(v){
+    if (!v || v === this.clock || this.members.has(v)) return;
+    this.members.add(v);
+    v.addEventListener('loadeddata', ()=> this.syncAll(true), { once:true });
+  }
+
+  _propagateRate(){
+    this.members.forEach(v => v.playbackRate = this.clock.playbackRate);
+  }
+
+  syncAll(force=false){
+    if (this._syncing) return;
+    this._syncing = true;
+    const t = this.clock.currentTime || 0;
+    this.members.forEach(v => {
+      if (v.readyState < 2) return;
+      const drift = Math.abs((v.currentTime || 0) - t);
+      if (force || drift > 0.04){
+        try{ v.currentTime = t; }catch(_){ }
+      }
+      v.playbackRate = this.clock.playbackRate;
+      if (!this.clock.paused){ v.play().catch(()=>{}); }
+      else { v.pause(); }
+    });
+    this._syncing = false;
   }
 }
 
@@ -369,6 +457,23 @@ class SyncGroup {
     { key:'drawer',  label:'Drawer',  ids:[1,2,3,4] },
   ];
 
+  const TACO_SAMPLES = [
+    { task: '(brush, brush, bowl)', base: 'videos/removed/(brush, brush, bowl)/20230927_027' },
+    { task: '(brush, brush, box)', base: 'videos/removed/(brush, brush, box)/20231005_200' },
+    { task: '(brush, brush, plate)', base: 'videos/removed/(brush, brush, plate)/20230927_025' },
+    { task: '(brush, brush, teapot)', base: 'videos/removed/(brush, brush, teapot)/20231006_175' },
+    { task: '(brush, eraser, plate)', base: 'videos/removed/(brush, eraser, plate)/20231027_045' },
+    { task: '(brush, roller, box)', base: 'videos/removed/(brush, roller, box)/20231013_304' },
+    { task: '(cut, knife, bowl)', base: 'videos/removed/(cut, knife, bowl)/20231020_254' },
+    { task: '(cut, knife, plate)', base: 'videos/removed/(cut, knife, plate)/20230926_040' },
+    { task: '(empty, cup, plate)', base: 'videos/removed/(empty, cup, plate)/20230928_031' },
+    { task: '(empty, plate, cup)', base: 'videos/removed/(empty, plate, cup)/20230928_033' },
+    { task: '(empty, plate, teapot)', base: 'videos/removed/(empty, plate, teapot)/20230927_046' },
+    { task: '(pour in some, plate, cup)', base: 'videos/removed/(pour in some, plate, cup)/20230928_032' },
+    { task: '(put in, bowl, plate)', base: 'videos/removed/(put in, bowl, plate)/20231024_253' },
+    { task: '(scrape off, knife, plate)', base: 'videos/removed/(scrape off, knife, plate)/20230926_034' },
+  ];
+
   // —— 懒加载观察器（任务区）——
   const lazyObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
@@ -410,6 +515,18 @@ class SyncGroup {
     v.dataset.src = src;
     if (lazyObserver) lazyObserver.observe(v); else { v.src = src; }
     if (playObserver) playObserver.observe(v);
+    v.addEventListener('ended', ()=>{ v.currentTime = 0; v.play().catch(()=>{}); });
+    return v;
+  }
+
+  function makeTacoVideo(src){
+    const v = document.createElement('video');
+    v.muted = true; v.autoplay = true; v.loop = true; v.playsInline = true;
+    v.setAttribute('muted',''); v.setAttribute('playsinline','');
+    v.preload = 'none';
+    v.controls = false;
+    v.dataset.src = src;
+    if (lazyObserver) lazyObserver.observe(v); else { v.src = src; }
     v.addEventListener('ended', ()=>{ v.currentTime = 0; v.play().catch(()=>{}); });
     return v;
   }
@@ -510,6 +627,81 @@ class SyncGroup {
     TASKS[1].ids.forEach(id => drawerWrap.appendChild(buildCard('drawer',  id)));
   }
 
+  function buildTaco(){
+    const track = document.getElementById('taco-track');
+    if (!track) return;
+
+    TACO_SAMPLES.forEach(sample => {
+      const slide = document.createElement('div'); slide.className = 'taco-slide';
+      const titleRow = document.createElement('div'); titleRow.className = 'taco-task-row';
+      const leftSpacer = document.createElement('div');
+      const midTitle = document.createElement('div');
+      const rightSpacer = document.createElement('div');
+      midTitle.className = 'taco-task-title';
+      midTitle.textContent = sample.task;
+      titleRow.append(leftSpacer, midTitle, rightSpacer);
+      const row = document.createElement('div'); row.className = 'taco-row';
+
+      const pane1 = document.createElement('div'); pane1.className = 'taco-pane';
+      const pane2 = document.createElement('div'); pane2.className = 'taco-pane';
+      const pane3 = document.createElement('div'); pane3.className = 'taco-pane';
+
+      const vColor = makeTacoVideo(`${sample.base}/color.mp4`);
+      const vOrig  = makeTacoVideo(`${sample.base}/original_video.mp4`);
+      const vInpt  = makeTacoVideo(`${sample.base}/inpainted_video.mp4`);
+
+      pane1.append(vColor); pane1.appendChild(labelEl('Color'));
+      pane2.append(vOrig);  pane2.appendChild(labelEl('Original'));
+      pane3.append(vInpt);  pane3.appendChild(labelEl('Inpainted'));
+
+      row.append(pane1, pane2, pane3);
+  slide.append(titleRow, row);
+      track.appendChild(slide);
+
+      const group = new TightSyncGroup(vColor);
+      group.add(vOrig); group.add(vInpt);
+      slide.tacoGroup = group;
+
+      const trySync = ()=> group.syncAll(true);
+      vColor.addEventListener('loadeddata', trySync, { once:true });
+      vOrig.addEventListener('loadeddata', trySync, { once:true });
+      vInpt.addEventListener('loadeddata', trySync, { once:true });
+    });
+
+    // Wheel -> snap to next/prev slide
+    let lastWheel = 0;
+    track.addEventListener('wheel', (e)=>{
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+        const now = performance.now();
+        if (now - lastWheel < 400) { e.preventDefault(); return; }
+        lastWheel = now;
+        const dir = e.deltaY > 0 ? 1 : -1;
+        const step = track.clientWidth;
+        track.scrollBy({ left: dir * step, behavior: 'smooth' });
+        e.preventDefault();
+      }
+    }, { passive:false });
+
+    // Play/pause whole slide when in view
+    if ('IntersectionObserver' in window){
+      const tacoSlideObserver = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          const slide = entry.target;
+          const group = slide?.tacoGroup;
+          if (!group) return;
+          const vids = Array.from(slide.querySelectorAll('video'));
+          if (entry.isIntersecting){
+            group.syncAll(true);
+            vids.forEach(v => v.play().catch(()=>{}));
+          } else {
+            vids.forEach(v => v.pause());
+          }
+        });
+      }, { threshold: 0.6 });
+      track.querySelectorAll('.taco-slide').forEach(slide => tacoSlideObserver.observe(slide));
+    }
+  }
+
     /* ==== Real Robot Demos (per task, 4-in-a-row) ==== */
   /* Map both tasks here. Update file names/paths as you add reals. */
   const REAL_DEMOS = {
@@ -594,6 +786,7 @@ class SyncGroup {
 
   buildTasks();
   buildRealRows();
+  buildTaco();
 
 </script>
 </body>
