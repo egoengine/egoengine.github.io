@@ -136,18 +136,14 @@
     margin:12px 0 32px; 
   }
   .real-row{
-    display:grid;
-    grid-template-columns:repeat(4, minmax(140px, 1fr)); /* exactly 4 in one line */
-    grid-auto-flow:column;
-    grid-auto-columns:minmax(140px, 1fr);
+    display:flex;
+    flex-wrap:nowrap;             /* always one row */
     gap:4px;                      /* match .dual gap */
     overflow:hidden;
   }
-  .real-row{
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-  }
   .real-row .pane{
+    flex:1 1 0;                   /* keep 4 items in one row, allow shrink */
+    min-width:0;
     height:clamp(110px, 18vw, 160px);
     border-radius:10px;
     background:#000; position:relative; overflow:hidden;
