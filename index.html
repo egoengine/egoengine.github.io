@@ -74,12 +74,13 @@
   }
   .demos{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
+    grid-template-columns:repeat(2, minmax(0, 1fr));
     gap:16px;
   }
   .card{
     background:#0f0f12; color:#eee; border:1px solid rgba(255,255,255,.08);
     border-radius:16px; overflow:hidden; box-shadow:0 6px 24px rgba(0,0,0,.15);
+    min-width:0;
   }
   .card .meta{
     padding:10px 14px; display:flex; align-items:center; justify-content:space-between;
