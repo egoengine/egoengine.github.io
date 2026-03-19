@@ -273,7 +273,7 @@
 
     <section class="taco-section" id="taco">
       <h2>TACO Visualization</h2>
-      <div class="hint">Scroll to move between tasks. Each task shows Human Video → Digital Twin → EgoEngine Demo.</div>
+      <div class="hint">Scroll to move between tasks. Each task shows Original → Simulation → Inpainted.</div>
       <div class="taco-track" id="taco-track"></div>
     </section>
 
@@ -358,39 +358,37 @@ class TightSyncGroup {
     this.clock = clock;
     this.members = new Set();
     this._syncing = false;
-
-    const sync = ()=> this.syncAll();
-    clock.addEventListener('play', sync);
-    clock.addEventListener('pause', sync);
-    clock.addEventListener('seeked', sync);
+    clock.addEventListener('play', ()=> this._propagatePlay(true));
+    clock.addEventListener('pause', ()=> this._propagatePlay(false));
     clock.addEventListener('ratechange', ()=> this._propagateRate());
-    clock.addEventListener('timeupdate', sync);
+    clock.addEventListener('ended', ()=> this.resetAll());
   }
 
   add(v){
     if (!v || v === this.clock || this.members.has(v)) return;
     this.members.add(v);
-    v.addEventListener('loadeddata', ()=> this.syncAll(true), { once:true });
+    v.addEventListener('loadeddata', ()=> this.resetAll(), { once:true });
   }
 
   _propagateRate(){
     this.members.forEach(v => v.playbackRate = this.clock.playbackRate);
   }
 
-  syncAll(force=false){
+  _propagatePlay(playing){
+    this.members.forEach(v => playing ? v.play().catch(()=>{}) : v.pause());
+  }
+
+  resetAll(){
     if (this._syncing) return;
     this._syncing = true;
-    const t = this.clock.currentTime || 0;
-    this.members.forEach(v => {
-      if (v.readyState < 2) return;
-      const drift = Math.abs((v.currentTime || 0) - t);
-      if (force || drift > 0.04){
-        try{ v.currentTime = t; }catch(_){ }
-      }
+    const toStart = (v)=>{
+      try{ v.currentTime = 0; }catch(_){ }
       v.playbackRate = this.clock.playbackRate;
       if (!this.clock.paused){ v.play().catch(()=>{}); }
       else { v.pause(); }
-    });
+    };
+    toStart(this.clock);
+    this.members.forEach(toStart);
     this._syncing = false;
   }
 }
@@ -650,9 +648,9 @@ class TightSyncGroup {
       const vOrig  = makeTacoVideo(`${sample.base}/original_video.mp4`);
       const vInpt  = makeTacoVideo(`${sample.base}/inpainted_video.mp4`);
 
-      pane1.append(vColor); pane1.appendChild(labelEl('Color'));
-      pane2.append(vOrig);  pane2.appendChild(labelEl('Original'));
-      pane3.append(vInpt);  pane3.appendChild(labelEl('Inpainted'));
+  pane1.append(vColor); pane1.appendChild(labelEl('Original'));
+  pane2.append(vOrig);  pane2.appendChild(labelEl('Simulation'));
+  pane3.append(vInpt);  pane3.appendChild(labelEl('Inpainted'));
 
       row.append(pane1, pane2, pane3);
   slide.append(titleRow, row);
@@ -661,11 +659,6 @@ class TightSyncGroup {
       const group = new TightSyncGroup(vColor);
       group.add(vOrig); group.add(vInpt);
       slide.tacoGroup = group;
-
-      const trySync = ()=> group.syncAll(true);
-      vColor.addEventListener('loadeddata', trySync, { once:true });
-      vOrig.addEventListener('loadeddata', trySync, { once:true });
-      vInpt.addEventListener('loadeddata', trySync, { once:true });
     });
 
     // Wheel -> snap to next/prev slide
