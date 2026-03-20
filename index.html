@@ -28,15 +28,13 @@
     -webkit-background-clip:text; background-clip:text; color:transparent;
     text-shadow:0 10px 32px rgba(0,0,0,.45);
   }
-  .grid{
-    position:absolute; inset:0;
-    display:grid; grid-template-columns:repeat(6, var(--cell));
-    grid-auto-rows:var(--cell); gap:0;
+  .hero-canvas{
+    position:absolute; inset:0; overflow:hidden; background:#000;
   }
-  .tile{ position:relative; overflow:hidden; background:#000; }
-  .tile video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; background:#000; }
-  .tile video.base{ z-index:1; }
-  .tile video.overlay{ z-index:2;
+  .hero-pair{ position:absolute; inset:0; overflow:hidden; background:#000; }
+  .hero-pair video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; background:#000; }
+  .hero-pair video.base{ z-index:1; }
+  .hero-pair video.overlay{ z-index:2;
     clip-path: polygon(0 0, var(--cut,0px) 0, var(--cut,0px) 100%, 0 100%);
     will-change:clip-path;
   }
@@ -206,7 +204,7 @@
     <div class="stage" id="stage">
       <div class="brand"><div class="wordmark">EgoEngine</div></div>
       <div id="divider"></div>
-      <main id="grid" class="grid"></main>
+      <main id="heroCanvas" class="hero-canvas"></main>
     </div>
   </section>
 
@@ -286,12 +284,8 @@
 
 <script>
   /* ============= HERO (light-load + per-tile sync) ============= */
-  const ROOT_HUMAN = 'videos/blending/human';
-  const FOLDERS_HUMAN = [
-    'Cassie-bartending','Cassie-bartending2','Cassie-blinds','Cassie-boardgame','Cassie-cat2','Cassie-cat_food',
-    'Cassie-cooking2','Cassie-door','Cassie-earbuds','Cassie-eyedrops','Cassie-flower','Cassie-fridge',
-    'Cassie-laptop','Cassie-microwave','Cassie-oven','Cassie-subway','Cassie-yogurt','Cassie-Rowan-Allen',
-  ];
+  const HERO_CROPPED = 'videos/blending/human/A.mp4';
+  const HERO_INPAINTED = 'videos/blending/human/B.mp4';
 
   // HERO 专用懒加载观察器（只负责把 data-src → src）
   const heroLazyObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
@@ -307,16 +301,19 @@
   }, { rootMargin: '200px 0px' }) : null;
 
   // 小工具：创建轻载入视频（HERO 版）
-  function makeHeroLazyVideo(src, cls){
+  function makeHeroLazyVideo(src, cls, opts = {}){
+    const { loop = true } = opts;
     const v = document.createElement('video');
     v.className = cls || '';
-    v.autoplay = true; v.loop = true; v.muted = true; v.playsInline = true;
+    v.autoplay = true; v.loop = loop; v.muted = true; v.playsInline = true;
     v.setAttribute('muted',''); v.setAttribute('playsinline','');
   v.preload = 'none';         // 严格懒加载：不预取视频数据
     v.controls = false;
     v.dataset.src = src;        // 等 observer 挂上
     if (heroLazyObserver) heroLazyObserver.observe(v); else { v.src = src; }
-    v.addEventListener('ended', () => { v.currentTime = 0; v.play().catch(()=>{}); });
+    if (loop){
+      v.addEventListener('ended', () => { v.currentTime = 0; v.play().catch(()=>{}); });
+    }
     return v;
   }
 
@@ -407,24 +404,40 @@ class TightSyncGroup {
 
 
   const stage = document.getElementById('stage');
-  const grid  = document.getElementById('grid');
+  const heroCanvas  = document.getElementById('heroCanvas');
 
   (function buildHero(){
-    for (const name of FOLDERS_HUMAN){
-      const tile = document.createElement('div'); tile.className = 'tile';
-      const base = makeHeroLazyVideo(`${ROOT_HUMAN}/${name}/inpainted_video.mp4`, 'base');
-      const over = makeHeroLazyVideo(`${ROOT_HUMAN}/${name}/cropped_video.mp4`,   'overlay');
-      tile.append(base, over);
-      grid.appendChild(tile);
+    const pair = document.createElement('div'); pair.className = 'hero-pair';
+    const base = makeHeroLazyVideo(HERO_INPAINTED, 'base', { loop:false });
+    const over = makeHeroLazyVideo(HERO_CROPPED,   'overlay', { loop:false });
+    pair.append(base, over);
+    heroCanvas.appendChild(pair);
 
-      // 每个 tile 自己的同步（用 overlay 作为 clock，或 base 均可）
-      const group = new SyncGroup(over);
-      group.add(base);
-      // 首次可播放时再对齐一次
-      const trySync = ()=>{ group.resyncMember(base); };
-      over.addEventListener('loadeddata', trySync, { once:true });
-      base.addEventListener('loadeddata', trySync, { once:true });
-    }
+    let restarting = false;
+    let lastRestartAt = -1;
+    const restartPair = ()=>{
+      const now = performance.now();
+      if (lastRestartAt > 0 && (now - lastRestartAt) < 200) return;
+      lastRestartAt = now;
+      if (restarting) return;
+      restarting = true;
+      [base, over].forEach(v=>{
+        try { v.currentTime = 0; } catch(_){}
+      });
+      base.play().catch(()=>{});
+      over.play().catch(()=>{});
+      restarting = false;
+    };
+    // No frame-by-frame sync. Only re-align both streams at loop boundaries.
+    base.addEventListener('ended', restartPair);
+    over.addEventListener('ended', restartPair);
+
+    const startTogether = ()=>{
+      if (base.readyState >= 2 && over.readyState >= 2) restartPair();
+    };
+    base.addEventListener('loadeddata', startTogether, { once:true });
+    over.addEventListener('loadeddata', startTogether, { once:true });
+
     requestAnimationFrame(()=>{ updateDivider(); updateClips(); updatePlayback(); });
   })();
 
@@ -432,18 +445,18 @@ class TightSyncGroup {
   let cutX = Math.round(window.innerWidth * 0.5);
   function updateDivider(){ stage.style.setProperty('--divider-x', cutX + 'px'); }
   function updateClips(){
-    document.querySelectorAll('.tile').forEach(tile=>{
-      const r = tile.getBoundingClientRect();
+    document.querySelectorAll('.hero-pair').forEach(pair=>{
+      const r = pair.getBoundingClientRect();
       const local = Math.max(0, Math.min(r.width, cutX - r.left));
-      tile.style.setProperty('--cut', local + 'px');
+      pair.style.setProperty('--cut', local + 'px');
     });
   }
   function setPlaying(v, shouldPlay){ if (!v) return; shouldPlay ? v.play().catch(()=>{}) : v.pause(); }
   function updatePlayback(){
-    document.querySelectorAll('.tile').forEach(tile=>{
-      const base = tile.querySelector('video.base');
-      const over = tile.querySelector('video.overlay');
-      const r = tile.getBoundingClientRect();
+    document.querySelectorAll('.hero-pair').forEach(pair=>{
+      const base = pair.querySelector('video.base');
+      const over = pair.querySelector('video.overlay');
+      const r = pair.getBoundingClientRect();
       const cutLocal = Math.max(0, Math.min(r.width, cutX - r.left));
       setPlaying(over, cutLocal > 0);
       setPlaying(base, cutLocal < r.width);
