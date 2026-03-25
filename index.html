@@ -167,6 +167,33 @@
   }
   .taco-track::-webkit-scrollbar{ height:8px; }
   .taco-track::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.2); border-radius:999px; }
+  .taco-scroll-wrap{ position:relative; }
+  .taco-scroll-cue{
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    width:36px; height:36px; border-radius:999px;
+    display:grid; place-items:center;
+    font-size:20px; font-weight:900; color:#fff;
+    background:rgba(0,0,0,.65); border:1px solid rgba(255,255,255,.42);
+    box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 6px 16px rgba(0,0,0,.35);
+    pointer-events:none; z-index:3;
+    animation:taco-cue-nudge-right 1.2s ease-in-out infinite;
+    transition:opacity .2s ease;
+  }
+  .taco-scroll-cue.hidden{ opacity:0; }
+  .taco-scroll-cue.left{
+    left:12px; right:auto;
+    animation-name:taco-cue-nudge-left;
+  }
+  @keyframes taco-cue-nudge-right {
+    0% { transform:translateY(-50%) translateX(0); }
+    50% { transform:translateY(-50%) translateX(2px); }
+    100% { transform:translateY(-50%) translateX(0); }
+  }
+  @keyframes taco-cue-nudge-left {
+    0% { transform:translateY(-50%) translateX(0); }
+    50% { transform:translateY(-50%) translateX(-2px); }
+    100% { transform:translateY(-50%) translateX(0); }
+  }
   .taco-slide{
     flex:0 0 100%;
     scroll-snap-align:start;
@@ -275,7 +302,11 @@
     <section class="taco-section" id="taco">
       <h2>TACO Visualization</h2>
       <div class="hint">Scroll to move between tasks. Each task shows Original → Simulation → Inpainted.</div>
+      <div class="taco-scroll-wrap">
       <div class="taco-track" id="taco-track"></div>
+      <div class="taco-scroll-cue left hidden" id="taco-scroll-cue-left" aria-hidden="true">&larr;</div>
+      <div class="taco-scroll-cue" id="taco-scroll-cue" aria-hidden="true">&rarr;</div>
+      </div>
     </section>
 
     <!-- your other content below -->
@@ -665,7 +696,17 @@ class TightSyncGroup {
 
   function buildTaco(){
     const track = document.getElementById('taco-track');
+    const cueRight = document.getElementById('taco-scroll-cue');
+    const cueLeft = document.getElementById('taco-scroll-cue-left');
     if (!track) return;
+
+    const updateCue = ()=>{
+      const canScroll = track.scrollWidth > track.clientWidth + 2;
+      const atStart = track.scrollLeft <= 2;
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      if (cueLeft) cueLeft.classList.toggle('hidden', !canScroll || atStart);
+      if (cueRight) cueRight.classList.toggle('hidden', !canScroll || atEnd);
+    };
 
     TACO_SAMPLES.forEach(sample => {
       const slide = document.createElement('div'); slide.className = 'taco-slide';
@@ -712,6 +753,10 @@ class TightSyncGroup {
         e.preventDefault();
       }
     }, { passive:false });
+
+    track.addEventListener('scroll', updateCue, { passive:true });
+    window.addEventListener('resize', updateCue);
+    requestAnimationFrame(updateCue);
 
     // Play/pause whole slide when in view
     if ('IntersectionObserver' in window){
