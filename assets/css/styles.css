@@ -1,0 +1,217 @@
+  :root{
+    --divider-x: 50vw;
+    --bg:#0b0b0c;
+    --line:rgba(255,255,255,.95);
+    --cell: calc(100vw / 6);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:#eaeaea;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+
+  /* ===== HERO (unchanged layout, now light-load) ===== */
+  .hero{ position:relative; width:100vw; height:100vh; overflow:hidden; }
+  .stage{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:100vw; height:calc(100vw / 2);
+  }
+  .brand{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:100; pointer-events:none; }
+  .brand .wordmark{
+    font-weight:900; font-size:clamp(42px,10vw,120px); line-height:1;
+    background:linear-gradient(180deg,#fff,#dfe5ff);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 10px 32px rgba(0,0,0,.45);
+  }
+  .hero-canvas{
+    position:absolute; inset:0; overflow:hidden; background:#000;
+  }
+  .hero-pair{ position:absolute; inset:0; overflow:hidden; background:#000; }
+  .hero-pair video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; background:#000; }
+  .hero-pair video.base{ z-index:1; }
+  .hero-pair video.overlay{ z-index:2;
+    clip-path: polygon(0 0, var(--cut,0px) 0, var(--cut,0px) 100%, 0 100%);
+    will-change:clip-path;
+  }
+  #divider{ position:absolute; top:0; bottom:0; left: calc(var(--divider-x) - 1px);
+    width:2px; background:var(--line); pointer-events:none; z-index:2; }
+
+  /* Hide scrollbars */
+  html, body{ -ms-overflow-style:none; scrollbar-width:none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar{ width:0; height:0; background:transparent; }
+
+  /* ===== AFTER-HERO HEADING (unchanged look) ===== */
+  .after-hero { background:#fff; color:#111; padding:5vh 0; }
+  .fancy-title{
+    margin:5vh auto; max-width:80%; text-align:center;
+    font-size:clamp(28px,4vw,56px); font-weight:900; line-height:1.2;
+    background:linear-gradient(90deg,#2c2c54,#443377,#5a2a5a);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 4px 12px rgba(0,0,0,.2);
+    animation:title-glow 6s ease-in-out infinite alternate;
+  }
+  @keyframes title-glow {
+    from { text-shadow:0 0 14px rgba(68,51,119,.6),0 0 28px rgba(90,42,90,.5),0 0 42px rgba(68,51,119,.4); }
+    to   { text-shadow:0 0 22px rgba(90,42,90,.8),0 0 44px rgba(68,51,119,.7),0 0 60px rgba(90,42,90,.6); }
+  }
+
+  /* ===== NEW: Real-World Tasks layout ===== */
+  .tasks{ max-width:min(1200px,92vw); margin:0 auto 8vh; }
+  .tasks h2{
+    font-size:clamp(22px,2.6vw,32px); margin:0 0 6px; font-weight:800;
+    letter-spacing:.2px;
+  }
+  .task{ margin:32px 0 48px; }
+  .task h3{
+    margin:12px 0 18px; font-size:clamp(18px,2.2vw,24px); font-weight:800;
+  }
+  .demos{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:16px;
+  }
+  .card{
+    background:#0f0f12; color:#eee; border:1px solid rgba(255,255,255,.08);
+    border-radius:16px; overflow:hidden; box-shadow:0 6px 24px rgba(0,0,0,.15);
+    min-width:0;
+  }
+  .card .meta{
+    padding:10px 14px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid rgba(255,255,255,.06); font-size:14px; color:#bbb;
+  }
+  .dual{
+    display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:8px; background:#000;
+  }
+  .pane{
+    position:relative; width:100%;
+    aspect-ratio:16/9; background:#000; overflow:hidden; border-radius:10px;
+  }
+  .pane video{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;
+    background:#000;
+  }
+  .labels{
+    position:absolute; top:6px; left:6px; padding:3px 6px; font-size:12px;
+    background:rgba(0,0,0,.55); color:#fff; border-radius:6px; pointer-events:none;
+  }
+  details.extras{ padding:0 8px 8px; }
+  details.extras summary{
+    cursor:pointer; user-select:none; padding:10px 6px; color:#cbd3ff; font-size:14px;
+  }
+  .quad{
+    display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:6px;
+  }
+  .small .pane{ aspect-ratio:16/9; }
+  .ghost{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:12px; color:#888; background:linear-gradient(180deg,#101014,#0b0b0f);
+  }
+  .badge{
+    padding:4px 8px; border:1px solid rgba(255,255,255,.15); border-radius:999px;
+    font-size:12px; color:#999;
+  }
+  .hint{ font-size:12px; color:#7d7d7d; padding:0 14px 12px; }
+
+  .real-caption{
+    padding:8px 14px; font-size:14px; color:#bbb; border-top:1px solid rgba(255,255,255,.06);
+  }
+
+  /* ==== Real Robot Demos: 4-in-a-row under each task ==== */
+  .subhead{
+    margin: 10px 2px 8px;
+    font-size:14px; font-weight:700;
+    color:#9aa4ff;              /* darker than #cbd3ff */
+    letter-spacing:.2px;
+  }
+  .real-block{
+    background:#000;            /* match the inpainted dual's black panel */
+    border-radius:16px;
+    padding:8px;
+    margin:12px 0 32px; 
+  }
+  .real-row{
+    display:flex;
+    flex-wrap:nowrap;             /* always one row */
+    gap:4px;                      /* match .dual gap */
+    overflow:hidden;
+  }
+  .real-row .pane{
+    flex:1 1 0;                   /* keep 4 items in one row, allow shrink */
+    min-width:0;
+    height:clamp(110px, 18vw, 160px);
+    border-radius:10px;
+    background:#000; position:relative; overflow:hidden;
+  }
+  .real-row .pane video{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  }
+
+  /* ===== TACO Visualization (scrollable, snap) ===== */
+  .taco-section{
+    max-width:min(1400px, 92vw);
+    margin:0 auto 10vh;
+  }
+  .taco-section h2{
+    font-size:clamp(22px,2.6vw,32px); margin:0 0 6px; font-weight:800;
+    letter-spacing:.2px;
+  }
+  .taco-track{
+    display:flex; gap:0; overflow-x:auto; padding:12px 0 8px;
+    scroll-snap-type:x mandatory; scroll-behavior:smooth;
+    scroll-padding-inline:0;
+  }
+  .taco-track::-webkit-scrollbar{ height:8px; }
+  .taco-track::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.2); border-radius:999px; }
+  .taco-scroll-wrap{ position:relative; }
+  .taco-scroll-cue{
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    width:36px; height:36px; border-radius:999px;
+    display:grid; place-items:center;
+    font-size:20px; font-weight:900; color:#fff;
+    background:rgba(0,0,0,.65); border:1px solid rgba(255,255,255,.42);
+    box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 6px 16px rgba(0,0,0,.35);
+    pointer-events:none; z-index:3;
+    animation:taco-cue-nudge-right 1.2s ease-in-out infinite;
+    transition:opacity .2s ease;
+  }
+  .taco-scroll-cue.hidden{ opacity:0; }
+  .taco-scroll-cue.left{
+    left:12px; right:auto;
+    animation-name:taco-cue-nudge-left;
+  }
+  @keyframes taco-cue-nudge-right {
+    0% { transform:translateY(-50%) translateX(0); }
+    50% { transform:translateY(-50%) translateX(2px); }
+    100% { transform:translateY(-50%) translateX(0); }
+  }
+  @keyframes taco-cue-nudge-left {
+    0% { transform:translateY(-50%) translateX(0); }
+    50% { transform:translateY(-50%) translateX(-2px); }
+    100% { transform:translateY(-50%) translateX(0); }
+  }
+  .taco-slide{
+    flex:0 0 100%;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+    background:#0f0f12; border:1px solid rgba(255,255,255,.08);
+    border-radius:18px; padding:14px; box-shadow:0 6px 24px rgba(0,0,0,.15);
+  }
+  .taco-task-row{
+    display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px;
+    margin:2px 0 8px; align-items:center;
+  }
+  .taco-task-title{
+    font-size:13px; font-weight:700; color:#cbd3ff; text-align:center;
+    padding:4px 6px; background:rgba(255,255,255,.06); border-radius:8px;
+  }
+  .taco-row{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
+  .taco-pane{ position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; }
+  .taco-pane video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .taco-label{
+    position:absolute; top:6px; left:6px; padding:3px 6px; font-size:12px;
+    background:rgba(0,0,0,.55); color:#fff; border-radius:6px; pointer-events:none;
+  }
+
+
+  /* Small screens: stack the two main panes vertically */
+  @media (max-width:560px){
+    .dual{ grid-template-columns:1fr; }
+  }
