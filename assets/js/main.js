@@ -469,6 +469,14 @@ class TightSyncGroup {
     drawer:  { root: 'videos/blending/drawer/real',  files: ['drawer1.mp4','drawer2.mp4','drawer3.mp4','drawer4.mp4'] }, // rename to your actual files
   };
 
+  const VISUAL_COMPARISONS = [
+    { label: 'Human', src: 'videos/visual_comparison/human.mp4' },
+    { label: 'EgoMimic', src: 'videos/visual_comparison/emimic.mp4' },
+    { label: 'VACE (WAN2.1)', src: 'videos/visual_comparison/vace.mp4' },
+    { label: 'Masquerade', src: 'videos/visual_comparison/masquerade.mp4' },
+    { label: 'EgoEngine', src: 'videos/visual_comparison/egoengine.mp4' },
+  ];
+
   /* Release logic (uses your existing lazyObserver & playObserver) */
   const releaseTimeoutMs = 8000;
   const offscreenTimers = new WeakMap();
@@ -543,7 +551,23 @@ class TightSyncGroup {
     });
   }
 
+  function buildVisualComparison(){
+    const row = document.getElementById('visual-comparison-row');
+    if (!row) return;
+
+    VISUAL_COMPARISONS.forEach((item, i) => {
+      const pane = document.createElement('div');
+      pane.className = 'pane';
+      const v = makeLazyVideo(item.src, 'v v-visual-comparison', 'visual-comparison', i + 1);
+      pane.appendChild(v);
+      pane.appendChild(labelEl(item.label));
+      row.appendChild(pane);
+      if (releaseObserver) releaseObserver.observe(v);
+    });
+  }
+
 
   buildTasks();
   buildRealRows();
+  buildVisualComparison();
   buildTaco();
