@@ -212,6 +212,13 @@ class TightSyncGroup {
     { task: '(scrape off, knife, plate)', base: 'videos/taco/(scrape off, knife, plate)/20230926_034' },
   ];
 
+  const ARIA_SAMPLES = [
+    { task: 'Drawer', base: 'videos/aria/drawer' },
+    { task: 'Flower', base: 'videos/aria/flower' },
+    { task: 'Hammer', base: 'videos/aria/hammer' },
+    { task: 'Mustard', base: 'videos/aria/mustard' },
+  ];
+
   // —— 懒加载观察器（任务区）——
   const lazyObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
@@ -378,10 +385,10 @@ class TightSyncGroup {
     TASKS[1].ids.forEach(id => drawerWrap.appendChild(buildCard('drawer',  id)));
   }
 
-  function buildTaco(){
-    const track = document.getElementById('taco-track');
-    const cueRight = document.getElementById('taco-scroll-cue');
-    const cueLeft = document.getElementById('taco-scroll-cue-left');
+  function buildThreeVideoVisualization({ trackId, cueRightId, cueLeftId, samples }){
+    const track = document.getElementById(trackId);
+    const cueRight = document.getElementById(cueRightId);
+    const cueLeft = document.getElementById(cueLeftId);
     if (!track) return;
 
     const updateCue = ()=>{
@@ -392,7 +399,7 @@ class TightSyncGroup {
       if (cueRight) cueRight.classList.toggle('hidden', !canScroll || atEnd);
     };
 
-    TACO_SAMPLES.forEach(sample => {
+    samples.forEach(sample => {
       const slide = document.createElement('div'); slide.className = 'taco-slide';
       const titleRow = document.createElement('div'); titleRow.className = 'taco-task-row';
       const leftSpacer = document.createElement('div');
@@ -460,6 +467,24 @@ class TightSyncGroup {
       }, { threshold: 0.6 });
       track.querySelectorAll('.taco-slide').forEach(slide => tacoSlideObserver.observe(slide));
     }
+  }
+
+  function buildTaco(){
+    buildThreeVideoVisualization({
+      trackId: 'taco-track',
+      cueRightId: 'taco-scroll-cue',
+      cueLeftId: 'taco-scroll-cue-left',
+      samples: TACO_SAMPLES,
+    });
+  }
+
+  function buildAria(){
+    buildThreeVideoVisualization({
+      trackId: 'aria-track',
+      cueRightId: 'aria-scroll-cue',
+      cueLeftId: 'aria-scroll-cue-left',
+      samples: ARIA_SAMPLES,
+    });
   }
 
     /* ==== Real Robot Demos (per task, 4-in-a-row) ==== */
@@ -571,3 +596,4 @@ class TightSyncGroup {
   buildRealRows();
   buildVisualComparison();
   buildTaco();
+  buildAria();
