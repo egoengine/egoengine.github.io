@@ -196,20 +196,20 @@ class TightSyncGroup {
   ];
 
   const TACO_SAMPLES = [
-    { task: '(brush, brush, bowl)', base: 'videos/removed/(brush, brush, bowl)/20230927_027' },
-    { task: '(brush, brush, box)', base: 'videos/removed/(brush, brush, box)/20231005_200' },
-    { task: '(brush, brush, plate)', base: 'videos/removed/(brush, brush, plate)/20230927_025' },
-    { task: '(brush, brush, teapot)', base: 'videos/removed/(brush, brush, teapot)/20231006_175' },
-    { task: '(brush, eraser, plate)', base: 'videos/removed/(brush, eraser, plate)/20231027_045' },
-    { task: '(brush, roller, box)', base: 'videos/removed/(brush, roller, box)/20231013_304' },
-    { task: '(cut, knife, bowl)', base: 'videos/removed/(cut, knife, bowl)/20231020_254' },
-    { task: '(cut, knife, plate)', base: 'videos/removed/(cut, knife, plate)/20230926_040' },
-    { task: '(empty, cup, plate)', base: 'videos/removed/(empty, cup, plate)/20230928_031' },
-    { task: '(empty, plate, cup)', base: 'videos/removed/(empty, plate, cup)/20230928_033' },
-    { task: '(empty, plate, teapot)', base: 'videos/removed/(empty, plate, teapot)/20230927_046' },
-    { task: '(pour in some, plate, cup)', base: 'videos/removed/(pour in some, plate, cup)/20230928_032' },
-    { task: '(put in, bowl, plate)', base: 'videos/removed/(put in, bowl, plate)/20231024_253' },
-    { task: '(scrape off, knife, plate)', base: 'videos/removed/(scrape off, knife, plate)/20230926_034' },
+    { task: '(brush, brush, bowl)', base: 'videos/taco/(brush, brush, bowl)/20230927_027' },
+    { task: '(brush, brush, box)', base: 'videos/taco/(brush, brush, box)/20231005_200' },
+    { task: '(brush, brush, plate)', base: 'videos/taco/(brush, brush, plate)/20230927_025' },
+    { task: '(brush, brush, teapot)', base: 'videos/taco/(brush, brush, teapot)/20231006_175' },
+    { task: '(brush, eraser, plate)', base: 'videos/taco/(brush, eraser, plate)/20231027_045' },
+    { task: '(brush, roller, box)', base: 'videos/taco/(brush, roller, box)/20231013_304' },
+    { task: '(cut, knife, bowl)', base: 'videos/taco/(cut, knife, bowl)/20231020_254' },
+    { task: '(cut, knife, plate)', base: 'videos/taco/(cut, knife, plate)/20230926_040' },
+    { task: '(empty, cup, plate)', base: 'videos/taco/(empty, cup, plate)/20230928_031' },
+    { task: '(empty, plate, cup)', base: 'videos/taco/(empty, plate, cup)/20230928_033' },
+    { task: '(empty, plate, teapot)', base: 'videos/taco/(empty, plate, teapot)/20230927_046' },
+    { task: '(pour in some, plate, cup)', base: 'videos/taco/(pour in some, plate, cup)/20230928_032' },
+    { task: '(put in, bowl, plate)', base: 'videos/taco/(put in, bowl, plate)/20231024_253' },
+    { task: '(scrape off, knife, plate)', base: 'videos/taco/(scrape off, knife, plate)/20230926_034' },
   ];
 
   // —— 懒加载观察器（任务区）——
