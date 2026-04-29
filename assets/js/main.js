@@ -219,6 +219,10 @@ class TightSyncGroup {
     { task: 'Mustard', base: 'videos/aria/mustard' },
   ];
 
+  const ACTION_SAMPLES = [
+    { task: 'Aria Hammer', label: 'Refined Action', src: 'videos/aria/hammer/hammer_rl.mp4', aspectRatio: '3 / 1' },
+  ];
+
   // —— 懒加载观察器（任务区）——
   const lazyObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
@@ -306,7 +310,7 @@ class TightSyncGroup {
     const vCropped   = makeLazyVideo(`${base}/cropped_video.mp4`, 'v v-cropped', 'cropped', id);
     const vInpainted = makeLazyVideo(`${base}/inpainted_video.mp4`, 'v v-inpainted', 'inpainted', id);
 
-    leftPane.append(vCropped);  leftPane.appendChild(labelEl('Cropped'));
+    leftPane.append(vCropped);  leftPane.appendChild(labelEl('Original'));
     rightPane.append(vInpainted); rightPane.appendChild(labelEl('Inpainted'));
     dual.append(leftPane, rightPane);
     card.appendChild(dual);
@@ -378,11 +382,49 @@ class TightSyncGroup {
     const g = document.createElement('div'); g.className = 'ghost'; g.textContent = text; return g;
   }
 
+  function buildTaskScroller(taskKey, ids){
+    const track = document.getElementById(`${taskKey}-demos`);
+    const cueRight = document.getElementById(`${taskKey}-demos-cue`);
+    const cueLeft = document.getElementById(`${taskKey}-demos-cue-left`);
+    if (!track) return;
+
+    const groups = [];
+    for (let i = 0; i < ids.length; i += 2) groups.push(ids.slice(i, i + 2));
+
+    groups.forEach(pair => {
+      const slide = document.createElement('div');
+      slide.className = 'demos-slide';
+      pair.forEach(id => slide.appendChild(buildCard(taskKey, id)));
+      track.appendChild(slide);
+    });
+
+    const updateCue = ()=>{
+      const canScroll = track.scrollWidth > track.clientWidth + 2;
+      const atStart = track.scrollLeft <= 2;
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      if (cueLeft) cueLeft.classList.toggle('hidden', !canScroll || atStart);
+      if (cueRight) cueRight.classList.toggle('hidden', !canScroll || atEnd);
+    };
+
+    let lastWheel = 0;
+    track.addEventListener('wheel', (e)=>{
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+        const now = performance.now();
+        if (now - lastWheel < 400) { e.preventDefault(); return; }
+        lastWheel = now;
+        const dir = e.deltaY > 0 ? 1 : -1;
+        track.scrollBy({ left: dir * track.clientWidth, behavior: 'smooth' });
+        e.preventDefault();
+      }
+    }, { passive:false });
+
+    track.addEventListener('scroll', updateCue, { passive:true });
+    window.addEventListener('resize', updateCue);
+    requestAnimationFrame(updateCue);
+  }
+
   function buildTasks(){
-    const mustardWrap = document.getElementById('mustard-demos');
-    const drawerWrap  = document.getElementById('drawer-demos');
-    TASKS[0].ids.forEach(id => mustardWrap.appendChild(buildCard('mustard', id)));
-    TASKS[1].ids.forEach(id => drawerWrap.appendChild(buildCard('drawer',  id)));
+    TASKS.forEach(task => buildTaskScroller(task.key, task.ids));
   }
 
   function buildThreeVideoVisualization({ trackId, cueRightId, cueLeftId, samples }){
@@ -487,6 +529,78 @@ class TightSyncGroup {
     });
   }
 
+  function buildActionBranch(){
+    const track = document.getElementById('action-track');
+    const cueRight = document.getElementById('action-scroll-cue');
+    const cueLeft = document.getElementById('action-scroll-cue-left');
+    if (!track) return;
+
+    const updateCue = ()=>{
+      const canScroll = track.scrollWidth > track.clientWidth + 2;
+      const atStart = track.scrollLeft <= 2;
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      if (cueLeft) cueLeft.classList.toggle('hidden', !canScroll || atStart);
+      if (cueRight) cueRight.classList.toggle('hidden', !canScroll || atEnd);
+    };
+
+    ACTION_SAMPLES.forEach((sample, idx) => {
+      const slide = document.createElement('div');
+      slide.className = 'action-slide';
+
+      const titleRow = document.createElement('div');
+      titleRow.className = 'taco-task-row';
+      const leftSpacer = document.createElement('div');
+      const midTitle = document.createElement('div');
+      const rightSpacer = document.createElement('div');
+      midTitle.className = 'taco-task-title';
+      midTitle.textContent = sample.task;
+      titleRow.append(leftSpacer, midTitle, rightSpacer);
+
+      const media = document.createElement('div');
+      media.className = 'action-media';
+      const pane = document.createElement('div');
+      pane.className = 'action-pane';
+      if (sample.aspectRatio) pane.style.aspectRatio = sample.aspectRatio;
+      const v = makeTacoVideo(sample.src);
+      pane.append(v);
+      pane.appendChild(labelEl(sample.label));
+      media.appendChild(pane);
+
+      slide.append(titleRow, media);
+      track.appendChild(slide);
+      if (releaseObserver) releaseObserver.observe(v);
+      slide.actionVideos = [v];
+      slide.dataset.actionId = String(idx + 1);
+    });
+
+    let lastWheel = 0;
+    track.addEventListener('wheel', (e)=>{
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+        const now = performance.now();
+        if (now - lastWheel < 400) { e.preventDefault(); return; }
+        lastWheel = now;
+        const dir = e.deltaY > 0 ? 1 : -1;
+        track.scrollBy({ left: dir * track.clientWidth, behavior: 'smooth' });
+        e.preventDefault();
+      }
+    }, { passive:false });
+
+    track.addEventListener('scroll', updateCue, { passive:true });
+    window.addEventListener('resize', updateCue);
+    requestAnimationFrame(updateCue);
+
+    if ('IntersectionObserver' in window){
+      const actionObserver = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          const slide = entry.target;
+          const videos = slide?.actionVideos || [];
+          videos.forEach(v => entry.isIntersecting ? v.play().catch(()=>{}) : v.pause());
+        });
+      }, { threshold: 0.6 });
+      track.querySelectorAll('.action-slide').forEach(slide => actionObserver.observe(slide));
+    }
+  }
+
     /* ==== Real Robot Demos (per task, 4-in-a-row) ==== */
   /* Map both tasks here. Update file names/paths as you add reals. */
   const REAL_DEMOS = {
@@ -559,10 +673,10 @@ class TightSyncGroup {
 
     block.appendChild(row);
 
-    // Insert at TOP of the task (right after <h3>, before .demos)
-    const h3 = taskEl.querySelector('h3');
-    if (h3){
-      h3.insertAdjacentElement('afterend', block);
+    // Insert at top of the task heading area, before the demo grid.
+    const heading = taskEl.querySelector('h3, h4');
+    if (heading){
+      heading.insertAdjacentElement('afterend', block);
     } else {
       taskEl.prepend(block);
     }
@@ -597,3 +711,4 @@ class TightSyncGroup {
   buildVisualComparison();
   buildTaco();
   buildAria();
+  buildActionBranch();
