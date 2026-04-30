@@ -222,6 +222,7 @@ class TightSyncGroup {
   const ACTION_SAMPLES = [
     { task: 'Aria Mustard', label: 'Refined Action', src: 'videos/aria/mustard/mustard_rl.mp4', aspectRatio: '18 / 5' },
     { task: 'Aria Hammer', label: 'Refined Action', src: 'videos/aria/hammer/hammer_rl.mp4', aspectRatio: '18 / 5' },
+    { task: 'Aria Flower', label: 'Refined Action', src: 'videos/aria/flower/flower_rl.mp4', aspectRatio: '18 / 5' },
   ];
 
   // —— 懒加载观察器（任务区）——
