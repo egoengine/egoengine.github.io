@@ -213,13 +213,14 @@ class TightSyncGroup {
   ];
 
   const ARIA_SAMPLES = [
-    { task: 'Drawer', base: 'videos/aria/drawer' },
-    { task: 'Flower', base: 'videos/aria/flower' },
-    { task: 'Hammer', base: 'videos/aria/hammer' },
     { task: 'Mustard', base: 'videos/aria/mustard' },
+    { task: 'Drawer', base: 'videos/aria/drawer' },
+    { task: 'Hammer', base: 'videos/aria/hammer' },
+    { task: 'Flower', base: 'videos/aria/flower' },
   ];
 
   const ACTION_SAMPLES = [
+    { task: 'Aria Mustard', label: 'Refined Action', src: 'videos/aria/mustard/mustard_rl.mp4', aspectRatio: '3 / 1' },
     { task: 'Aria Hammer', label: 'Refined Action', src: 'videos/aria/hammer/hammer_rl.mp4', aspectRatio: '3 / 1' },
   ];
 
@@ -377,6 +378,12 @@ class TightSyncGroup {
 
   function labelEl(text){
     const l = document.createElement('div'); l.className = 'labels'; l.textContent = text; return l;
+  }
+  function splitLabelEl(text, side){
+    const l = document.createElement('div');
+    l.className = `action-split-label ${side}`;
+    l.textContent = text;
+    return l;
   }
   function ghostEl(text){
     const g = document.createElement('div'); g.className = 'ghost'; g.textContent = text; return g;
@@ -563,7 +570,8 @@ class TightSyncGroup {
       if (sample.aspectRatio) pane.style.aspectRatio = sample.aspectRatio;
       const v = makeTacoVideo(sample.src);
       pane.append(v);
-      pane.appendChild(labelEl(sample.label));
+      pane.appendChild(splitLabelEl('Reference', 'left'));
+      pane.appendChild(splitLabelEl('Simulation', 'right'));
       media.appendChild(pane);
 
       slide.append(titleRow, media);

@@ -328,7 +328,7 @@
     margin:0 auto 10vh;
   }
   .action-track{
-    justify-content:center;
+    justify-content:flex-start;
   }
   .taco-track{
     display:flex; gap:0; overflow-x:auto; padding:12px 0 8px;
@@ -420,6 +420,24 @@
     object-fit:contain;
     display:block;
     background:#000;
+  }
+  .action-split-label{
+    position:absolute;
+    top:8px;
+    padding:4px 8px;
+    font-size:12px;
+    line-height:1;
+    color:#fff;
+    background:rgba(0,0,0,.55);
+    border-radius:6px;
+    pointer-events:none;
+    z-index:1;
+  }
+  .action-split-label.left{
+    left:8px;
+  }
+  .action-split-label.right{
+    left:calc(50% + 8px);
   }
 
 
