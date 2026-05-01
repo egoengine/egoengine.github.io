@@ -400,14 +400,16 @@
   .action-media{
     margin-top:2px;
     display:grid;
-    grid-template-columns:minmax(0, 1fr);
+    grid-template-columns:repeat(3, minmax(0, 1fr));
     gap:2px;
+    width:100%;
   }
   .action-pane{
     position:relative;
     width:100%;
     margin:0 auto;
-    aspect-ratio:16/9;
+    height:100%;
+    min-height:0;
     background:#000;
     border-radius:12px;
     overflow:hidden;

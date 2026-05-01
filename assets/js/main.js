@@ -220,10 +220,42 @@ class TightSyncGroup {
   ];
 
   const ACTION_SAMPLES = [
-    { task: 'Aria Mustard', label: 'Refined Action', src: 'videos/aria/mustard/mustard_rl.mp4', aspectRatio: '18 / 5' },
-    { task: 'Aria Drawer', label: 'Refined Action', src: 'videos/aria/drawer/drawer_rl.mp4', aspectRatio: '18 / 5' },
-    { task: 'Aria Hammer', label: 'Refined Action', src: 'videos/aria/hammer/hammer_rl.mp4', aspectRatio: '18 / 5' },
-    { task: 'Aria Flower', label: 'Refined Action', src: 'videos/aria/flower/flower_rl.mp4', aspectRatio: '18 / 5' },
+    {
+      task: 'Aria Mustard',
+      videos: [
+        { label: 'ref', src: 'videos/aria/mustard/mustard_ref.mp4' },
+        { label: 'replay', src: 'videos/aria/mustard/mustard_replay.mp4' },
+        { label: 'egoengine', src: 'videos/aria/mustard/mustard_rl.mp4' },
+      ],
+      aspectRatio: '16 / 3',
+    },
+    {
+      task: 'Aria Drawer',
+      videos: [
+        { label: 'ref', src: 'videos/aria/drawer/drawer_ref.mp4' },
+        { label: 'replay', src: 'videos/aria/drawer/drawer_replay.mp4' },
+        { label: 'egoengine', src: 'videos/aria/drawer/drawer_rl.mp4' },
+      ],
+      aspectRatio: '16 / 3',
+    },
+    {
+      task: 'Aria Hammer',
+      videos: [
+        { label: 'ref', src: 'videos/aria/hammer/hammer_ref.mp4' },
+        { label: 'replay', src: 'videos/aria/hammer/hammer_replay.mp4' },
+        { label: 'egoengine', src: 'videos/aria/hammer/hammer_rl.mp4' },
+      ],
+      aspectRatio: '16 / 3',
+    },
+    {
+      task: 'Aria Flower',
+      videos: [
+        { label: 'ref', src: 'videos/aria/flower/flower_ref.mp4' },
+        { label: 'replay', src: 'videos/aria/flower/flower_replay.mp4' },
+        { label: 'egoengine', src: 'videos/aria/flower/flower_rl.mp4' },
+      ],
+      aspectRatio: '16 / 3',
+    },
   ];
 
   // —— 懒加载观察器（任务区）——
@@ -567,19 +599,27 @@ class TightSyncGroup {
 
       const media = document.createElement('div');
       media.className = 'action-media';
-      const pane = document.createElement('div');
-      pane.className = 'action-pane';
-      if (sample.aspectRatio) pane.style.aspectRatio = sample.aspectRatio;
-      const v = makeTacoVideo(sample.src);
-      pane.append(v);
-      pane.appendChild(splitLabelEl('Reference', 'left'));
-      pane.appendChild(splitLabelEl('Simulation', 'right'));
-      media.appendChild(pane);
+      if (sample.aspectRatio) media.style.aspectRatio = sample.aspectRatio;
+      const videos = [];
+      sample.videos.forEach(item => {
+        const pane = document.createElement('div');
+        pane.className = 'action-pane';
+        const v = makeTacoVideo(item.src);
+        pane.append(v);
+        pane.appendChild(labelEl(item.label));
+        media.appendChild(pane);
+        videos.push(v);
+      });
 
       slide.append(titleRow, media);
       track.appendChild(slide);
-      if (releaseObserver) releaseObserver.observe(v);
-      slide.actionVideos = [v];
+      if (releaseObserver) videos.forEach(v => releaseObserver.observe(v));
+      slide.actionVideos = videos;
+      if (videos.length > 0){
+        const group = new TightSyncGroup(videos[0]);
+        videos.slice(1).forEach(v => group.add(v));
+        slide.actionGroup = group;
+      }
       slide.dataset.actionId = String(idx + 1);
     });
 
@@ -604,7 +644,12 @@ class TightSyncGroup {
         entries.forEach(entry=>{
           const slide = entry.target;
           const videos = slide?.actionVideos || [];
-          videos.forEach(v => entry.isIntersecting ? v.play().catch(()=>{}) : v.pause());
+          if (entry.isIntersecting){
+            if (slide?.actionGroup) slide.actionGroup.syncAll(true);
+            else videos.forEach(v => v.play().catch(()=>{}));
+          } else {
+            videos.forEach(v => v.pause());
+          }
         });
       }, { threshold: 0.6 });
       track.querySelectorAll('.action-slide').forEach(slide => actionObserver.observe(slide));
