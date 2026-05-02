@@ -193,6 +193,8 @@ class TightSyncGroup {
   const TASKS = [
     { key:'mustard', label:'Mustard', ids:[1,2,3,4] },
     { key:'drawer',  label:'Drawer',  ids:[1,2,3,4] },
+    { key:'hammer',  label:'Hammer',  ids:[1,2,3,4] },
+    { key:'flower',  label:'Flower',  ids:[1,2,3,4] },
   ];
 
   const TACO_SAMPLES = [
@@ -660,7 +662,9 @@ class TightSyncGroup {
   /* Map both tasks here. Update file names/paths as you add reals. */
   const REAL_DEMOS = {
     mustard: { root: 'videos/blending/mustard/real', files: ['mustard1.mp4','mustard2.mp4','mustard3.mp4','mustard4.mp4'] },
-    drawer:  { root: 'videos/blending/drawer/real',  files: ['drawer1.mp4','drawer2.mp4','drawer3.mp4','drawer4.mp4'] }, // rename to your actual files
+    drawer:  { root: 'videos/blending/drawer/real',  files: ['drawer1.mp4','drawer2.mp4','drawer3.mp4','drawer4.mp4'] },
+    hammer:  { root: 'videos/blending/hammer/real',  files: ['hammer0.mp4','hammer1.mp4','hammer2.mp4','hammer3.mp4'] },
+    flower:  { root: 'videos/blending/flower/real',  files: ['flower0.mp4','flower1.mp4','flower2.mp4','flower3.mp4'] },
   };
 
   const VISUAL_COMPARISONS = [
