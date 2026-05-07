@@ -229,11 +229,11 @@ class TightSyncGroup {
 
   const ACTION_TACO_SAMPLES = [
     {
-      task: '(brush, brush, teapot)',
+      task: '(brush, brush, bowl)',
       videos: [
-        { label: 'ref', src: 'videos/taco/(brush, brush, teapot)/20231006_175/ref.mp4' },
-        { label: 'replay', src: 'videos/taco/(brush, brush, teapot)/20231006_175/replay.mp4' },
-        { label: 'egoengine', src: 'videos/taco/(brush, brush, teapot)/20231006_175/rl.mp4' },
+        { label: 'ref', src: 'videos/taco/(brush, brush, bowl)/20230927_027/ref.mp4' },
+        { label: 'replay', src: 'videos/taco/(brush, brush, bowl)/20230927_027/replay.mp4' },
+        { label: 'egoengine', src: 'videos/taco/(brush, brush, bowl)/20230927_027/rl.mp4' },
       ],
       aspectRatio: '16 / 3',
     },
