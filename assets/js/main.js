@@ -801,6 +801,13 @@ class TightSyncGroup {
     { label: 'EgoEngine', src: 'videos/visual_comparison/egoengine.mp4' },
   ];
 
+  const POLICY_ROLLOUTS = [
+    { label: 'Mustard', src: 'videos/rollout/teleop/mustard.mp4' },
+    { label: 'Drawer', src: 'videos/rollout/teleop/drawer.mp4' },
+    { label: 'Hammer', src: 'videos/rollout/teleop/hammer.mp4' },
+    { label: 'Flower', src: 'videos/rollout/teleop/flower.mp4' },
+  ];
+
   /* Release logic (uses your existing lazyObserver & playObserver) */
   const releaseTimeoutMs = 8000;
   const offscreenTimers = new WeakMap();
@@ -890,8 +897,24 @@ class TightSyncGroup {
     });
   }
 
+  function buildPolicyRollout(){
+    const row = document.getElementById('policy-rollout-row');
+    if (!row) return;
+
+    POLICY_ROLLOUTS.forEach((item, i) => {
+      const pane = document.createElement('div');
+      pane.className = 'pane';
+      const v = makeLazyVideo(item.src, 'v v-policy-rollout', 'policy-rollout', i + 1);
+      pane.appendChild(v);
+      pane.appendChild(labelEl(item.label));
+      row.appendChild(pane);
+      if (releaseObserver) releaseObserver.observe(v);
+    });
+  }
+
   buildTasks();
   buildVisualComparison();
   buildTaco();
   buildAria();
   buildActionBranch();
+  buildPolicyRollout();

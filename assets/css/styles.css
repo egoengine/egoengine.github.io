@@ -323,6 +323,10 @@
     max-width:min(1200px, 92vw);
     margin:0 auto 10vh;
   }
+  .rollout-section{
+    max-width:min(1200px, 92vw);
+    margin:0 auto 10vh;
+  }
   .comparison-block{
     background:#000;
     border-radius:16px;
@@ -351,6 +355,36 @@
     overflow-wrap:anywhere;
     line-height:1.1;
     font-size:clamp(8px,1.8vw,12px);
+  }
+  .rollout-block{
+    background:#000;
+    border-radius:16px;
+    padding:8px;
+    margin:12px 0 32px;
+  }
+  .rollout-row{
+    display:flex;
+    flex-wrap:nowrap;
+    gap:4px;
+    overflow:hidden;
+  }
+  .rollout-row .pane{
+    flex:1 1 0;
+    min-width:0;
+    height:clamp(140px, 18vw, 220px);
+    border-radius:10px;
+    background:#000;
+    position:relative;
+    overflow:hidden;
+  }
+  .rollout-row .pane video{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    display:block;
+    background:#000;
   }
 
   /* ===== TACO Visualization (scrollable, snap) ===== */
@@ -528,15 +562,30 @@
   }
 
 
-  /* Small screens: stack the two main panes vertically */
+  /* Keep Real-World demo pairs locked to one row, even on phones */
   @media (max-width:900px){
     .demos-slide{
-      grid-template-columns:1fr;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:10px;
     }
   }
 
   @media (max-width:560px){
-    .dual{ grid-template-columns:1fr; }
+    .dual{
+      grid-template-columns:1fr 1fr;
+      padding:6px;
+      gap:3px;
+    }
+    .card .meta{
+      padding:8px 10px;
+      font-size:12px;
+    }
+    .labels{
+      top:4px;
+      left:4px;
+      padding:2px 5px;
+      font-size:10px;
+    }
     .subsection-head{
       align-items:flex-start;
       flex-direction:column;
