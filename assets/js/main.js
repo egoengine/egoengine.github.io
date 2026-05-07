@@ -457,6 +457,7 @@ class TightSyncGroup {
         lastWheel = now;
         const dir = e.deltaY > 0 ? 1 : -1;
         track.scrollBy({ left: dir * track.clientWidth, behavior: 'smooth' });
+        e.stopPropagation();
         e.preventDefault();
       }
     }, { passive:false });
@@ -467,7 +468,78 @@ class TightSyncGroup {
   }
 
   function buildTasks(){
+    const outerTrack = document.getElementById('real-world-track');
+    const outerCueRight = document.getElementById('real-world-scroll-cue');
+    const outerCueLeft = document.getElementById('real-world-scroll-cue-left');
+    if (!outerTrack) return;
+
+    TASKS.forEach(task => {
+      const slide = document.createElement('div');
+      slide.className = 'real-task-slide';
+
+      const taskEl = document.createElement('div');
+      taskEl.className = 'task';
+      taskEl.id = `task-${task.key}`;
+
+      const title = document.createElement('h4');
+      title.textContent = task.label;
+      title.appendChild(document.createTextNode(' '));
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      title.appendChild(badge);
+
+      const wrap = document.createElement('div');
+      wrap.className = 'task-scroll-wrap';
+
+      const demos = document.createElement('div');
+      demos.className = 'demos';
+      demos.id = `${task.key}-demos`;
+
+      const cueLeft = document.createElement('div');
+      cueLeft.className = 'task-scroll-cue left hidden';
+      cueLeft.id = `${task.key}-demos-cue-left`;
+      cueLeft.setAttribute('aria-hidden', 'true');
+      cueLeft.innerHTML = '&larr;';
+
+      const cueRight = document.createElement('div');
+      cueRight.className = 'task-scroll-cue';
+      cueRight.id = `${task.key}-demos-cue`;
+      cueRight.setAttribute('aria-hidden', 'true');
+      cueRight.innerHTML = '&rarr;';
+
+      wrap.append(demos, cueLeft, cueRight);
+      taskEl.append(title, wrap);
+      slide.appendChild(taskEl);
+      outerTrack.appendChild(slide);
+    });
+
     TASKS.forEach(task => buildTaskScroller(task.key, task.ids));
+    buildRealRows();
+
+    const updateCue = ()=>{
+      const canScroll = outerTrack.scrollWidth > outerTrack.clientWidth + 2;
+      const atStart = outerTrack.scrollLeft <= 2;
+      const atEnd = outerTrack.scrollLeft + outerTrack.clientWidth >= outerTrack.scrollWidth - 4;
+      if (outerCueLeft) outerCueLeft.classList.toggle('hidden', !canScroll || atStart);
+      if (outerCueRight) outerCueRight.classList.toggle('hidden', !canScroll || atEnd);
+    };
+
+    let lastWheel = 0;
+    outerTrack.addEventListener('wheel', (e)=>{
+      if (e.target.closest('.demos')) return;
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+        const now = performance.now();
+        if (now - lastWheel < 400) { e.preventDefault(); return; }
+        lastWheel = now;
+        const dir = e.deltaY > 0 ? 1 : -1;
+        outerTrack.scrollBy({ left: dir * outerTrack.clientWidth, behavior: 'smooth' });
+        e.preventDefault();
+      }
+    }, { passive:false });
+
+    outerTrack.addEventListener('scroll', updateCue, { passive:true });
+    window.addEventListener('resize', updateCue);
+    requestAnimationFrame(updateCue);
   }
 
   function buildThreeVideoVisualization({ trackId, cueRightId, cueLeftId, samples }){
@@ -764,9 +836,7 @@ class TightSyncGroup {
     });
   }
 
-
   buildTasks();
-  buildRealRows();
   buildVisualComparison();
   buildTaco();
   buildAria();

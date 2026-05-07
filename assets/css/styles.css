@@ -149,9 +149,43 @@
 
   /* ===== NEW: Real-World Tasks layout ===== */
   .tasks{ max-width:min(1200px,92vw); margin:0 auto 8vh; }
-  .task{ margin:32px 0 48px; }
+  .real-world-scroll-wrap{
+    position:relative;
+  }
+  .real-world-track{
+    display:flex;
+    gap:0;
+    overflow-x:auto;
+    padding:12px 0 8px;
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+  }
+  .real-world-track::-webkit-scrollbar{
+    height:8px;
+  }
+  .real-world-track::-webkit-scrollbar-thumb{
+    background:rgba(0,0,0,.2);
+    border-radius:999px;
+  }
+  .real-task-slide{
+    flex:0 0 100%;
+    min-width:0;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+    background:#0f0f12;
+    color:#eee;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 6px 24px rgba(0,0,0,.15);
+  }
+  .task{
+    margin:0;
+  }
   .task h4{
-    margin:12px 0 18px; font-size:clamp(18px,2.2vw,24px); font-weight:800;
+    margin:4px 0 18px;
+    font-size:clamp(20px,2.3vw,28px);
+    font-weight:800;
   }
   .task-scroll-wrap{
     position:relative;
@@ -250,14 +284,13 @@
   .task-scroll-cue.hidden{
     opacity:0;
   }
-
   .real-caption{
     padding:8px 14px; font-size:14px; color:#bbb; border-top:1px solid rgba(255,255,255,.06);
   }
 
   /* ==== Real Robot Demos: 4-in-a-row under each task ==== */
   .subhead{
-    margin: 10px 2px 8px;
+    margin:10px 2px 8px;
     font-size:14px; font-weight:700;
     color:#9aa4ff;              /* darker than #cbd3ff */
     letter-spacing:.2px;

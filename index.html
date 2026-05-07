@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>EgoEngine</title>
-<link rel="stylesheet" href="assets/css/styles.css?v=aria-visualization-20260501a" />
+<link rel="stylesheet" href="assets/css/styles.css?v=real-world-slider-20260507a" />
 </head>
 <body>
 
@@ -102,43 +102,13 @@
         <div class="subsection-head">
           <h3>Real-World Visualization</h3>
         </div>
+        <div class="hint">Slide horizontally to move between tasks. Each slide contains one full task.</div>
         <div class="hint">Left: <strong>original</strong> (human foreground). Right: <strong>inpainted</strong> (robot foreground).</div>
         <div class="hint">Note: The robot has since been upgraded, and some demos here were collected with Aria Gen 1 glasses.</div>
-
-        <div class="task" id="task-mustard">
-          <h4>Mustard <span class="badge"></span></h4>
-          <div class="task-scroll-wrap">
-            <div class="demos" id="mustard-demos"></div>
-            <div class="task-scroll-cue left hidden" id="mustard-demos-cue-left" aria-hidden="true">&larr;</div>
-            <div class="task-scroll-cue" id="mustard-demos-cue" aria-hidden="true">&rarr;</div>
-          </div>
-        </div>
-
-        <div class="task" id="task-drawer">
-          <h4>Drawer <span class="badge"></span></h4>
-          <div class="task-scroll-wrap">
-            <div class="demos" id="drawer-demos"></div>
-            <div class="task-scroll-cue left hidden" id="drawer-demos-cue-left" aria-hidden="true">&larr;</div>
-            <div class="task-scroll-cue" id="drawer-demos-cue" aria-hidden="true">&rarr;</div>
-          </div>
-        </div>
-
-        <div class="task" id="task-hammer">
-          <h4>Hammer <span class="badge"></span></h4>
-          <div class="task-scroll-wrap">
-            <div class="demos" id="hammer-demos"></div>
-            <div class="task-scroll-cue left hidden" id="hammer-demos-cue-left" aria-hidden="true">&larr;</div>
-            <div class="task-scroll-cue" id="hammer-demos-cue" aria-hidden="true">&rarr;</div>
-          </div>
-        </div>
-
-        <div class="task" id="task-flower">
-          <h4>Flower <span class="badge"></span></h4>
-          <div class="task-scroll-wrap">
-            <div class="demos" id="flower-demos"></div>
-            <div class="task-scroll-cue left hidden" id="flower-demos-cue-left" aria-hidden="true">&larr;</div>
-            <div class="task-scroll-cue" id="flower-demos-cue" aria-hidden="true">&rarr;</div>
-          </div>
+        <div class="taco-scroll-wrap real-world-scroll-wrap">
+          <div class="real-world-track" id="real-world-track"></div>
+          <div class="taco-scroll-cue left hidden" id="real-world-scroll-cue-left" aria-hidden="true">&larr;</div>
+          <div class="taco-scroll-cue" id="real-world-scroll-cue" aria-hidden="true">&rarr;</div>
         </div>
       </section>
 
@@ -171,6 +141,6 @@
     </section>
   </div>
 
-<script src="assets/js/main.js?v=aria-visualization-20260501g"></script>
+<script src="assets/js/main.js?v=real-world-slider-20260507a"></script>
 </body>
 </html>
