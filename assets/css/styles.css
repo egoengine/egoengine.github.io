@@ -354,11 +354,45 @@
   }
 
   /* ===== TACO Visualization (scrollable, snap) ===== */
+  .visual-generation-section{
+    max-width:min(1200px, 92vw);
+    margin:0 auto 8vh;
+  }
+  .visual-generation-block{
+    background:#0f0f12;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:14px;
+    box-shadow:0 6px 24px rgba(0,0,0,.15);
+  }
+  .action-generation-block{
+    background:#0f0f12;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:14px;
+    box-shadow:0 6px 24px rgba(0,0,0,.15);
+  }
   .taco-section,
   .aria-section,
   .action-section{
     max-width:min(1200px, 92vw);
     margin:0 auto 10vh;
+  }
+  .taco-section{
+    max-width:none;
+    margin:0 0 14px;
+  }
+  .aria-section{
+    max-width:none;
+    margin:0;
+  }
+  .action-taco-section{
+    max-width:none;
+    margin:0 0 14px;
+  }
+  .action-aria-section{
+    max-width:none;
+    margin:0;
   }
   .action-track{
     justify-content:flex-start;
@@ -408,6 +442,20 @@
     display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px;
     margin:2px 0 8px; align-items:center;
   }
+  .visual-generation-block .taco-slide{
+    box-shadow:none;
+  }
+  .taco-series-title{
+    justify-self:start;
+    align-self:start;
+    font-size:16px;
+    font-weight:800;
+    color:#f1f4ff;
+    padding:5px 9px;
+    background:rgba(255,255,255,.08);
+    border-radius:9px;
+    letter-spacing:.02em;
+  }
   .taco-task-title{
     font-size:13px; font-weight:700; color:#cbd3ff; text-align:center;
     padding:4px 6px; background:rgba(255,255,255,.06); border-radius:8px;
@@ -429,6 +477,9 @@
     border-radius:18px;
     padding:8px;
     box-shadow:0 6px 24px rgba(0,0,0,.15);
+  }
+  .action-generation-block .action-slide{
+    box-shadow:none;
   }
   .action-media{
     margin-top:2px;

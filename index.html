@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>EgoEngine</title>
-<link rel="stylesheet" href="assets/css/styles.css?v=real-world-slider-20260507a" />
+<link rel="stylesheet" href="assets/css/styles.css?v=refined-action-baked-tail-20260507e" />
 </head>
 <body>
 
@@ -74,27 +74,27 @@
         </div>
       </section>
 
-      <section class="taco-section" id="taco">
+      <section class="visual-generation-section" id="visual-generation">
         <div class="subsection-head">
-          <h3>TACO Visualization</h3>
+          <h3>Visual Generation</h3>
         </div>
-        <div class="hint">Scroll to move between tasks. Each task shows Original -> Simulation -> Inpainted.</div>
-        <div class="taco-scroll-wrap">
-          <div class="taco-track" id="taco-track"></div>
-          <div class="taco-scroll-cue left hidden" id="taco-scroll-cue-left" aria-hidden="true">&larr;</div>
-          <div class="taco-scroll-cue" id="taco-scroll-cue" aria-hidden="true">&rarr;</div>
-        </div>
-      </section>
+        <div class="hint">Scroll to move between tasks. Each task shows Human Videos -> Simulation -> Inpainted.</div>
+        <div class="visual-generation-block">
+          <section class="taco-section" id="taco">
+            <div class="taco-scroll-wrap">
+              <div class="taco-track" id="taco-track"></div>
+              <div class="taco-scroll-cue left hidden" id="taco-scroll-cue-left" aria-hidden="true">&larr;</div>
+              <div class="taco-scroll-cue" id="taco-scroll-cue" aria-hidden="true">&rarr;</div>
+            </div>
+          </section>
 
-      <section class="aria-section" id="aria">
-        <div class="subsection-head">
-          <h3>Aria Visualization</h3>
-        </div>
-        <div class="hint">Scroll to move between the four tasks. Each task shows Original -> Simulation -> Inpainted.</div>
-        <div class="taco-scroll-wrap">
-          <div class="taco-track" id="aria-track"></div>
-          <div class="taco-scroll-cue left hidden" id="aria-scroll-cue-left" aria-hidden="true">&larr;</div>
-          <div class="taco-scroll-cue" id="aria-scroll-cue" aria-hidden="true">&rarr;</div>
+          <section class="aria-section" id="aria">
+            <div class="taco-scroll-wrap">
+              <div class="taco-track" id="aria-track"></div>
+              <div class="taco-scroll-cue left hidden" id="aria-scroll-cue-left" aria-hidden="true">&larr;</div>
+              <div class="taco-scroll-cue" id="aria-scroll-cue" aria-hidden="true">&rarr;</div>
+            </div>
+          </section>
         </div>
       </section>
 
@@ -117,18 +117,29 @@
     <section class="branch-section" id="action-branch">
       <div class="branch-copy">
         <h2>Action Branch</h2>
-        <p>We next present executable action outputs produced by EgoEngine. The refined action branch below currently highlights the Aria mustard and hammer tasks.</p>
+        <p>We next present executable action outputs produced by EgoEngine on both TACO and Aria tasks.</p>
       </div>
 
       <section class="action-section" id="refined-action">
         <div class="subsection-head">
           <h3>Refined Action</h3>
         </div>
-        <div class="hint">Scroll-ready action visualization. Additional tasks can be added here later without changing the page structure.</div>
-        <div class="taco-scroll-wrap">
-          <div class="taco-track action-track" id="action-track"></div>
-          <div class="taco-scroll-cue left hidden" id="action-scroll-cue-left" aria-hidden="true">&larr;</div>
-          <div class="taco-scroll-cue" id="action-scroll-cue" aria-hidden="true">&rarr;</div>
+        <div class="hint">TACO on top and Aria below. Each track scrolls independently.</div>
+        <div class="action-generation-block">
+          <section class="action-taco-section" id="action-taco">
+            <div class="taco-scroll-wrap">
+              <div class="taco-track action-track" id="action-taco-track"></div>
+              <div class="taco-scroll-cue left hidden" id="action-taco-scroll-cue-left" aria-hidden="true">&larr;</div>
+              <div class="taco-scroll-cue" id="action-taco-scroll-cue" aria-hidden="true">&rarr;</div>
+            </div>
+          </section>
+          <section class="action-aria-section" id="action-aria">
+            <div class="taco-scroll-wrap">
+              <div class="taco-track action-track" id="action-aria-track"></div>
+              <div class="taco-scroll-cue left hidden" id="action-aria-scroll-cue-left" aria-hidden="true">&larr;</div>
+              <div class="taco-scroll-cue" id="action-aria-scroll-cue" aria-hidden="true">&rarr;</div>
+            </div>
+          </section>
         </div>
       </section>
     </section>
@@ -141,6 +152,6 @@
     </section>
   </div>
 
-<script src="assets/js/main.js?v=real-world-slider-20260507a"></script>
+<script src="assets/js/main.js?v=refined-action-baked-tail-20260507e"></script>
 </body>
 </html>

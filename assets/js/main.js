@@ -69,14 +69,20 @@ class SyncGroup {
 
 // === Tight sync group (per-frame alignment for 3-video TACO sets) ===
 class TightSyncGroup {
-  constructor(clock){
+  constructor(clock, opts = {}){
+    const { restartOnEnd = false } = opts;
     this.clock = clock;
     this.members = new Set();
     this._syncing = false;
+    this.restartOnEnd = restartOnEnd;
+    clock.addEventListener('loadeddata', ()=> this.resetAll(), { once:true });
     clock.addEventListener('play', ()=> this._propagatePlay(true));
     clock.addEventListener('pause', ()=> this._propagatePlay(false));
     clock.addEventListener('ratechange', ()=> this._propagateRate());
-    clock.addEventListener('ended', ()=> this.resetAll());
+    clock.addEventListener('ended', ()=>{
+      if (this.restartOnEnd) this.syncAll(true);
+      else this.resetAll();
+    });
   }
 
   add(v){
@@ -221,7 +227,28 @@ class TightSyncGroup {
     { task: 'Flower', base: 'videos/aria/flower' },
   ];
 
-  const ACTION_SAMPLES = [
+  const ACTION_TACO_SAMPLES = [
+    {
+      task: '(brush, brush, teapot)',
+      videos: [
+        { label: 'ref', src: 'videos/taco/(brush, brush, teapot)/20231006_175/ref.mp4' },
+        { label: 'replay', src: 'videos/taco/(brush, brush, teapot)/20231006_175/replay.mp4' },
+        { label: 'egoengine', src: 'videos/taco/(brush, brush, teapot)/20231006_175/rl.mp4' },
+      ],
+      aspectRatio: '16 / 3',
+    },
+    {
+      task: '(cut, knife, plate)',
+      videos: [
+        { label: 'ref', src: 'videos/taco/(cut, knife, plate)/20230926_040/ref.mp4' },
+        { label: 'replay', src: 'videos/taco/(cut, knife, plate)/20230926_040/replay.mp4' },
+        { label: 'egoengine', src: 'videos/taco/(cut, knife, plate)/20230926_040/rl.mp4' },
+      ],
+      aspectRatio: '16 / 3',
+    },
+  ];
+
+  const ACTION_ARIA_SAMPLES = [
     {
       task: 'Aria Mustard',
       videos: [
@@ -305,16 +332,19 @@ class TightSyncGroup {
     return v;
   }
 
-  function makeTacoVideo(src){
+  function makeTacoVideo(src, opts = {}){
+    const { loop = true } = opts;
     const v = document.createElement('video');
     let retried = false;
-    v.muted = true; v.autoplay = true; v.loop = true; v.playsInline = true;
+    v.muted = true; v.autoplay = true; v.loop = loop; v.playsInline = true;
     v.setAttribute('muted',''); v.setAttribute('playsinline','');
     v.preload = 'none';
     v.controls = false;
     v.dataset.src = src;
     if (lazyObserver) lazyObserver.observe(v); else { v.src = src; }
-    v.addEventListener('ended', ()=>{ v.currentTime = 0; v.play().catch(()=>{}); });
+    if (loop){
+      v.addEventListener('ended', ()=>{ v.currentTime = 0; v.play().catch(()=>{}); });
+    }
     // Some browsers occasionally stall a lazy video decode; retry once.
     v.addEventListener('stalled', ()=>{
       if (retried || !v.dataset.src) return;
@@ -542,7 +572,7 @@ class TightSyncGroup {
     requestAnimationFrame(updateCue);
   }
 
-  function buildThreeVideoVisualization({ trackId, cueRightId, cueLeftId, samples }){
+  function buildThreeVideoVisualization({ trackId, cueRightId, cueLeftId, samples, seriesLabel }){
     const track = document.getElementById(trackId);
     const cueRight = document.getElementById(cueRightId);
     const cueLeft = document.getElementById(cueLeftId);
@@ -559,12 +589,14 @@ class TightSyncGroup {
     samples.forEach(sample => {
       const slide = document.createElement('div'); slide.className = 'taco-slide';
       const titleRow = document.createElement('div'); titleRow.className = 'taco-task-row';
-      const leftSpacer = document.createElement('div');
+      const leftLabel = document.createElement('div');
       const midTitle = document.createElement('div');
       const rightSpacer = document.createElement('div');
+      leftLabel.className = 'taco-series-title';
+      leftLabel.textContent = seriesLabel;
       midTitle.className = 'taco-task-title';
       midTitle.textContent = sample.task;
-      titleRow.append(leftSpacer, midTitle, rightSpacer);
+      titleRow.append(leftLabel, midTitle, rightSpacer);
       const row = document.createElement('div'); row.className = 'taco-row';
 
       const pane1 = document.createElement('div'); pane1.className = 'taco-pane';
@@ -632,6 +664,7 @@ class TightSyncGroup {
       cueRightId: 'taco-scroll-cue',
       cueLeftId: 'taco-scroll-cue-left',
       samples: TACO_SAMPLES,
+      seriesLabel: 'TACO',
     });
   }
 
@@ -641,13 +674,14 @@ class TightSyncGroup {
       cueRightId: 'aria-scroll-cue',
       cueLeftId: 'aria-scroll-cue-left',
       samples: ARIA_SAMPLES,
+      seriesLabel: 'Aria',
     });
   }
 
-  function buildActionBranch(){
-    const track = document.getElementById('action-track');
-    const cueRight = document.getElementById('action-scroll-cue');
-    const cueLeft = document.getElementById('action-scroll-cue-left');
+  function buildActionTrack({ trackId, cueRightId, cueLeftId, samples, seriesLabel }){
+    const track = document.getElementById(trackId);
+    const cueRight = document.getElementById(cueRightId);
+    const cueLeft = document.getElementById(cueLeftId);
     if (!track) return;
 
     const updateCue = ()=>{
@@ -658,18 +692,20 @@ class TightSyncGroup {
       if (cueRight) cueRight.classList.toggle('hidden', !canScroll || atEnd);
     };
 
-    ACTION_SAMPLES.forEach((sample, idx) => {
+    samples.forEach((sample, idx) => {
       const slide = document.createElement('div');
       slide.className = 'action-slide';
 
       const titleRow = document.createElement('div');
       titleRow.className = 'taco-task-row';
-      const leftSpacer = document.createElement('div');
+      const leftLabel = document.createElement('div');
       const midTitle = document.createElement('div');
       const rightSpacer = document.createElement('div');
+      leftLabel.className = 'taco-series-title';
+      leftLabel.textContent = seriesLabel;
       midTitle.className = 'taco-task-title';
       midTitle.textContent = sample.task;
-      titleRow.append(leftSpacer, midTitle, rightSpacer);
+      titleRow.append(leftLabel, midTitle, rightSpacer);
 
       const media = document.createElement('div');
       media.className = 'action-media';
@@ -678,7 +714,7 @@ class TightSyncGroup {
       sample.videos.forEach(item => {
         const pane = document.createElement('div');
         pane.className = 'action-pane';
-        const v = makeTacoVideo(item.src);
+        const v = makeTacoVideo(item.src, { loop:false });
         pane.append(v);
         pane.appendChild(labelEl(item.label));
         media.appendChild(pane);
@@ -690,7 +726,7 @@ class TightSyncGroup {
       if (releaseObserver) videos.forEach(v => releaseObserver.observe(v));
       slide.actionVideos = videos;
       if (videos.length > 0){
-        const group = new TightSyncGroup(videos[0]);
+        const group = new TightSyncGroup(videos[0], { restartOnEnd:true });
         videos.slice(1).forEach(v => group.add(v));
         slide.actionGroup = group;
       }
@@ -728,6 +764,24 @@ class TightSyncGroup {
       }, { threshold: 0.6 });
       track.querySelectorAll('.action-slide').forEach(slide => actionObserver.observe(slide));
     }
+  }
+
+  function buildActionBranch(){
+    buildActionTrack({
+      trackId: 'action-taco-track',
+      cueRightId: 'action-taco-scroll-cue',
+      cueLeftId: 'action-taco-scroll-cue-left',
+      samples: ACTION_TACO_SAMPLES,
+      seriesLabel: 'TACO',
+    });
+
+    buildActionTrack({
+      trackId: 'action-aria-track',
+      cueRightId: 'action-aria-scroll-cue',
+      cueLeftId: 'action-aria-scroll-cue-left',
+      samples: ACTION_ARIA_SAMPLES,
+      seriesLabel: 'Aria',
+    });
   }
 
     /* ==== Real Robot Demos (per task, 4-in-a-row) ==== */
