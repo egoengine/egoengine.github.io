@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>EgoEngine</title>
-<link rel="stylesheet" href="assets/css/styles.css?v=real-world-mobile-row-20260507g" />
+<link rel="stylesheet" href="assets/css/styles.css?v=action-teaser-20260507a" />
 </head>
 <body>
 
@@ -119,6 +119,24 @@
         <h2>Action Branch</h2>
         <p>We next present executable action outputs produced by EgoEngine on both TACO and Aria tasks.</p>
       </div>
+
+      <section class="action-teaser-section" id="action-teaser">
+        <div class="action-teaser-row">
+          <div class="action-teaser-pane side">
+            <video src="videos/rollout/teaser/human.mp4" autoplay muted loop playsinline preload="metadata"></video>
+            <div class="labels">Human video</div>
+          </div>
+          <div class="action-teaser-pane main">
+            <video src="videos/rollout/teaser/replay_knife.mp4" autoplay muted loop playsinline preload="metadata"></video>
+            <div class="labels">Refined action replay</div>
+          </div>
+          <div class="action-teaser-pane side">
+            <video src="videos/rollout/teaser/sim_knife.mp4" autoplay muted loop playsinline preload="metadata"></video>
+            <div class="labels">Simulation</div>
+          </div>
+          <p class="action-teaser-note">Refined executable high-precision long-horizon dexterous task simply from a human video. Note: for safety constratrains we add another z-axis offset and sponge under knife to avoid collision with table.</p>
+        </div>
+      </section>
 
       <section class="action-section" id="refined-action">
         <div class="subsection-head">
