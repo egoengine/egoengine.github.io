@@ -464,6 +464,33 @@ class TightSyncGroup {
     const g = document.createElement('div'); g.className = 'ghost'; g.textContent = text; return g;
   }
 
+  function attachScrollCueButtons(track, cueLeft, cueRight, stepSize){
+    if (!track) return;
+    const move = (dir)=>{
+      const step = typeof stepSize === 'function' ? stepSize() : track.clientWidth;
+      track.scrollBy({ left: dir * step, behavior: 'smooth' });
+    };
+    const setupCue = (cue, dir, label)=>{
+      if (!cue) return;
+      cue.setAttribute('role', 'button');
+      cue.setAttribute('tabindex', '0');
+      cue.setAttribute('aria-label', label);
+      cue.removeAttribute('aria-hidden');
+      cue.addEventListener('click', (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        move(dir);
+      });
+      cue.addEventListener('keydown', (e)=>{
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        move(dir);
+      });
+    };
+    setupCue(cueLeft, -1, 'Scroll left');
+    setupCue(cueRight, 1, 'Scroll right');
+  }
+
   function buildTaskScroller(taskKey, ids){
     const track = document.getElementById(`${taskKey}-demos`);
     const cueRight = document.getElementById(`${taskKey}-demos-cue`);
@@ -503,6 +530,7 @@ class TightSyncGroup {
 
     track.addEventListener('scroll', updateCue, { passive:true });
     window.addEventListener('resize', updateCue);
+    attachScrollCueButtons(track, cueLeft, cueRight, () => track.clientWidth);
     requestAnimationFrame(updateCue);
   }
 
@@ -578,6 +606,7 @@ class TightSyncGroup {
 
     outerTrack.addEventListener('scroll', updateCue, { passive:true });
     window.addEventListener('resize', updateCue);
+    attachScrollCueButtons(outerTrack, outerCueLeft, outerCueRight, () => outerTrack.clientWidth);
     requestAnimationFrame(updateCue);
   }
 
@@ -645,6 +674,7 @@ class TightSyncGroup {
 
     track.addEventListener('scroll', updateCue, { passive:true });
     window.addEventListener('resize', updateCue);
+    attachScrollCueButtons(track, cueLeft, cueRight, () => track.clientWidth);
     requestAnimationFrame(updateCue);
 
     // Play/pause whole slide when in view
@@ -756,6 +786,7 @@ class TightSyncGroup {
 
     track.addEventListener('scroll', updateCue, { passive:true });
     window.addEventListener('resize', updateCue);
+    attachScrollCueButtons(track, cueLeft, cueRight, () => track.clientWidth);
     requestAnimationFrame(updateCue);
 
     if ('IntersectionObserver' in window){
