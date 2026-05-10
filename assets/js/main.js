@@ -550,10 +550,6 @@ class TightSyncGroup {
 
       const title = document.createElement('h4');
       title.textContent = task.label;
-      title.appendChild(document.createTextNode(' '));
-      const badge = document.createElement('span');
-      badge.className = 'badge';
-      title.appendChild(badge);
 
       const wrap = document.createElement('div');
       wrap.className = 'task-scroll-wrap';
