@@ -246,6 +246,15 @@ class TightSyncGroup {
       ],
       aspectRatio: '16 / 3',
     },
+    {
+      task: '(brush, brush, helmet)',
+      videos: [
+        { label: 'ref', src: 'videos/taco/(brush, brush, helmet)/20231027_013/ref.mp4' },
+        { label: 'replay', src: 'videos/taco/(brush, brush, helmet)/20231027_013/replay.mp4' },
+        { label: 'egoengine', src: 'videos/taco/(brush, brush, helmet)/20231027_013/rl.mp4' },
+      ],
+      aspectRatio: '16 / 3',
+    },
   ];
 
   const ACTION_ARIA_SAMPLES = [
