@@ -255,6 +255,15 @@ class TightSyncGroup {
       ],
       aspectRatio: '16 / 3',
     },
+    {
+      task: '(scrape off, knife, plate)',
+      videos: [
+        { label: 'ref', src: 'videos/taco/(scrape off, knife, plate)/20230926_034/ref.mp4' },
+        { label: 'replay', src: 'videos/taco/(scrape off, knife, plate)/20230926_034/replay.mp4' },
+        { label: 'egoengine', src: 'videos/taco/(scrape off, knife, plate)/20230926_034/rl.mp4' },
+      ],
+      aspectRatio: '16 / 3',
+    },
   ];
 
   const ACTION_ARIA_SAMPLES = [
