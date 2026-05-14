@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>EgoEngine</title>
-<link rel="stylesheet" href="assets/css/styles.css?v=action-teaser-note-outside-20260510a" />
+<link rel="stylesheet" href="assets/css/styles.css?v=rollout-egoengine-20260514a" />
 </head>
 <body>
 
@@ -78,7 +78,7 @@
         <div class="subsection-head">
           <h3>Visual Generation</h3>
         </div>
-        <div class="hint">Scroll to move between tasks. Each task shows Human Videos -> Simulation -> Inpainted.</div>
+        <div class="hint">Scroll to move between tasks. Each task shows Human Videos -> Simulation -> EgoEngine.</div>
         <div class="visual-generation-block">
           <section class="taco-section" id="taco">
             <div class="taco-scroll-wrap">
@@ -103,7 +103,7 @@
           <h3>Real-World Visualization</h3>
         </div>
         <div class="hint">Slide horizontally to move between tasks. Each slide contains one full task.</div>
-        <div class="hint">Left: <strong>original</strong> (human foreground). Right: <strong>inpainted</strong> (robot foreground).</div>
+        <div class="hint">Left: <strong>Human Videos</strong> (human foreground). Right: <strong>EgoEngine</strong> (robot foreground).</div>
         <div class="hint">Note: The robot has since been upgraded, and some demos here were collected with Aria Gen 1 glasses.</div>
         <div class="taco-scroll-wrap real-world-scroll-wrap">
           <div class="real-world-track" id="real-world-track"></div>
@@ -128,7 +128,7 @@
           </div>
           <div class="action-teaser-pane main">
             <video src="videos/rollout/teaser/replay_knife.mp4" autoplay muted loop playsinline preload="metadata"></video>
-            <div class="labels">Refined action replay</div>
+            <div class="labels">Refined Action Replay</div>
           </div>
           <div class="action-teaser-pane side">
             <video src="videos/rollout/teaser/sim_knife.mp4" autoplay muted loop playsinline preload="metadata"></video>
@@ -166,21 +166,25 @@
     <section class="branch-section" id="real-world">
       <div class="branch-copy">
         <h2>Real World</h2>
-        <p>We finally show real-world task results, including paired original human observations and generated robot observations.</p>
+        <p>We finally show real-world task results, including paired human observations and generated robot observations.</p>
       </div>
 
       <section class="rollout-section" id="policy-rollout">
         <div class="subsection-head">
-          <h3>Policy rollout</h3>
+          <h3>Policy Rollout</h3>
         </div>
         <div class="rollout-block">
-          <div class="subhead">teleop</div>
-          <div class="rollout-row" id="policy-rollout-row"></div>
+          <div class="subhead">Teleop <span class="speed-badge">2x</span></div>
+          <div class="rollout-row" id="policy-rollout-teleop-row"></div>
+        </div>
+        <div class="rollout-block">
+          <div class="subhead">EgoEngine <span class="speed-badge">1x</span></div>
+          <div class="rollout-row" id="policy-rollout-egoengine-row"></div>
         </div>
       </section>
     </section>
   </div>
 
-<script src="assets/js/main.js?v=action-taco-scrape-off-20260511a"></script>
+<script src="assets/js/main.js?v=rollout-egoengine-20260514a"></script>
 </body>
 </html>

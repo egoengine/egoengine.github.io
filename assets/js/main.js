@@ -231,36 +231,36 @@ class TightSyncGroup {
     {
       task: '(brush, brush, bowl)',
       videos: [
-        { label: 'ref', src: 'videos/taco/(brush, brush, bowl)/20230927_027/ref.mp4' },
-        { label: 'replay', src: 'videos/taco/(brush, brush, bowl)/20230927_027/replay.mp4' },
-        { label: 'egoengine', src: 'videos/taco/(brush, brush, bowl)/20230927_027/rl.mp4' },
+        { label: 'Reference', src: 'videos/taco/(brush, brush, bowl)/20230927_027/ref.mp4' },
+        { label: 'Replay', src: 'videos/taco/(brush, brush, bowl)/20230927_027/replay.mp4' },
+        { label: 'EgoEngine', src: 'videos/taco/(brush, brush, bowl)/20230927_027/rl.mp4' },
       ],
       aspectRatio: '16 / 3',
     },
     {
       task: '(cut, knife, plate)',
       videos: [
-        { label: 'ref', src: 'videos/taco/(cut, knife, plate)/20230926_040/ref.mp4' },
-        { label: 'replay', src: 'videos/taco/(cut, knife, plate)/20230926_040/replay.mp4' },
-        { label: 'egoengine', src: 'videos/taco/(cut, knife, plate)/20230926_040/rl.mp4' },
+        { label: 'Reference', src: 'videos/taco/(cut, knife, plate)/20230926_040/ref.mp4' },
+        { label: 'Replay', src: 'videos/taco/(cut, knife, plate)/20230926_040/replay.mp4' },
+        { label: 'EgoEngine', src: 'videos/taco/(cut, knife, plate)/20230926_040/rl.mp4' },
       ],
       aspectRatio: '16 / 3',
     },
     {
       task: '(brush, brush, helmet)',
       videos: [
-        { label: 'ref', src: 'videos/taco/(brush, brush, helmet)/20231027_013/ref.mp4' },
-        { label: 'replay', src: 'videos/taco/(brush, brush, helmet)/20231027_013/replay.mp4' },
-        { label: 'egoengine', src: 'videos/taco/(brush, brush, helmet)/20231027_013/rl.mp4' },
+        { label: 'Reference', src: 'videos/taco/(brush, brush, helmet)/20231027_013/ref.mp4' },
+        { label: 'Replay', src: 'videos/taco/(brush, brush, helmet)/20231027_013/replay.mp4' },
+        { label: 'EgoEngine', src: 'videos/taco/(brush, brush, helmet)/20231027_013/rl.mp4' },
       ],
       aspectRatio: '16 / 3',
     },
     {
       task: '(scrape off, knife, plate)',
       videos: [
-        { label: 'ref', src: 'videos/taco/(scrape off, knife, plate)/20230926_034/ref.mp4' },
-        { label: 'replay', src: 'videos/taco/(scrape off, knife, plate)/20230926_034/replay.mp4' },
-        { label: 'egoengine', src: 'videos/taco/(scrape off, knife, plate)/20230926_034/rl.mp4' },
+        { label: 'Reference', src: 'videos/taco/(scrape off, knife, plate)/20230926_034/ref.mp4' },
+        { label: 'Replay', src: 'videos/taco/(scrape off, knife, plate)/20230926_034/replay.mp4' },
+        { label: 'EgoEngine', src: 'videos/taco/(scrape off, knife, plate)/20230926_034/rl.mp4' },
       ],
       aspectRatio: '16 / 3',
     },
@@ -270,36 +270,36 @@ class TightSyncGroup {
     {
       task: 'Aria Mustard',
       videos: [
-        { label: 'ref', src: 'videos/aria/mustard/mustard_ref.mp4' },
-        { label: 'replay', src: 'videos/aria/mustard/mustard_replay.mp4' },
-        { label: 'egoengine', src: 'videos/aria/mustard/mustard_rl.mp4' },
+        { label: 'Reference', src: 'videos/aria/mustard/mustard_ref.mp4' },
+        { label: 'Replay', src: 'videos/aria/mustard/mustard_replay.mp4' },
+        { label: 'EgoEngine', src: 'videos/aria/mustard/mustard_rl.mp4' },
       ],
       aspectRatio: '16 / 3',
     },
     {
       task: 'Aria Drawer',
       videos: [
-        { label: 'ref', src: 'videos/aria/drawer/drawer_ref.mp4' },
-        { label: 'replay', src: 'videos/aria/drawer/drawer_replay.mp4' },
-        { label: 'egoengine', src: 'videos/aria/drawer/drawer_rl.mp4' },
+        { label: 'Reference', src: 'videos/aria/drawer/drawer_ref.mp4' },
+        { label: 'Replay', src: 'videos/aria/drawer/drawer_replay.mp4' },
+        { label: 'EgoEngine', src: 'videos/aria/drawer/drawer_rl.mp4' },
       ],
       aspectRatio: '16 / 3',
     },
     {
       task: 'Aria Hammer',
       videos: [
-        { label: 'ref', src: 'videos/aria/hammer/hammer_ref.mp4' },
-        { label: 'replay', src: 'videos/aria/hammer/hammer_replay.mp4' },
-        { label: 'egoengine', src: 'videos/aria/hammer/hammer_rl.mp4' },
+        { label: 'Reference', src: 'videos/aria/hammer/hammer_ref.mp4' },
+        { label: 'Replay', src: 'videos/aria/hammer/hammer_replay.mp4' },
+        { label: 'EgoEngine', src: 'videos/aria/hammer/hammer_rl.mp4' },
       ],
       aspectRatio: '16 / 3',
     },
     {
       task: 'Aria Flower',
       videos: [
-        { label: 'ref', src: 'videos/aria/flower/flower_ref.mp4' },
-        { label: 'replay', src: 'videos/aria/flower/flower_replay.mp4' },
-        { label: 'egoengine', src: 'videos/aria/flower/flower_rl.mp4' },
+        { label: 'Reference', src: 'videos/aria/flower/flower_ref.mp4' },
+        { label: 'Replay', src: 'videos/aria/flower/flower_replay.mp4' },
+        { label: 'EgoEngine', src: 'videos/aria/flower/flower_rl.mp4' },
       ],
       aspectRatio: '16 / 3',
     },
@@ -395,8 +395,8 @@ class TightSyncGroup {
     const vCropped   = makeLazyVideo(`${base}/cropped_video.mp4`, 'v v-cropped', 'cropped', id);
     const vInpainted = makeLazyVideo(`${base}/inpainted_video.mp4`, 'v v-inpainted', 'inpainted', id);
 
-    leftPane.append(vCropped);  leftPane.appendChild(labelEl('Original'));
-    rightPane.append(vInpainted); rightPane.appendChild(labelEl('Inpainted'));
+    leftPane.append(vCropped);  leftPane.appendChild(labelEl('Human Videos'));
+    rightPane.append(vInpainted); rightPane.appendChild(labelEl('EgoEngine'));
     dual.append(leftPane, rightPane);
     card.appendChild(dual);
 
@@ -650,9 +650,9 @@ class TightSyncGroup {
       const vOrig  = makeTacoVideo(`${sample.base}/original_video.mp4`);
       const vInpt  = makeTacoVideo(`${sample.base}/inpainted_video.mp4`);
 
-  pane1.append(vColor); pane1.appendChild(labelEl('Original'));
+  pane1.append(vColor); pane1.appendChild(labelEl('Human Videos'));
   pane2.append(vOrig);  pane2.appendChild(labelEl('Simulation'));
-  pane3.append(vInpt);  pane3.appendChild(labelEl('Inpainted'));
+  pane3.append(vInpt);  pane3.appendChild(labelEl('EgoEngine'));
 
       row.append(pane1, pane2, pane3);
   slide.append(titleRow, row);
@@ -846,11 +846,18 @@ class TightSyncGroup {
     { label: 'EgoEngine', src: 'videos/visual_comparison/egoengine.mp4' },
   ];
 
-  const POLICY_ROLLOUTS = [
+  const POLICY_ROLLOUT_TELEOP = [
     { label: 'Mustard', src: 'videos/rollout/teleop/mustard.mp4' },
     { label: 'Drawer', src: 'videos/rollout/teleop/drawer.mp4' },
     { label: 'Hammer', src: 'videos/rollout/teleop/hammer.mp4' },
     { label: 'Flower', src: 'videos/rollout/teleop/flower.mp4' },
+  ];
+
+  const POLICY_ROLLOUT_EGOENGINE = [
+    { label: 'Mustard', src: 'videos/rollout/egoengine/mustard.mp4' },
+    { label: 'Drawer', src: 'videos/rollout/egoengine/drawer.mp4' },
+    { label: 'Hammer', src: 'videos/rollout/egoengine/hammer.mp4' },
+    { label: 'Flower', src: 'videos/rollout/egoengine/flower.mp4' },
   ];
 
   /* Release logic (uses your existing lazyObserver & playObserver) */
@@ -942,19 +949,32 @@ class TightSyncGroup {
     });
   }
 
-  function buildPolicyRollout(){
-    const row = document.getElementById('policy-rollout-row');
+  function applyPlaybackRate(video, speed){
+    video.defaultPlaybackRate = speed;
+    video.playbackRate = speed;
+    video.addEventListener('loadedmetadata', () => { video.playbackRate = speed; });
+    video.addEventListener('play', () => { video.playbackRate = speed; });
+  }
+
+  function buildPolicyRolloutRow(rowId, items, opts = {}){
+    const row = document.getElementById(rowId);
     if (!row) return;
 
-    POLICY_ROLLOUTS.forEach((item, i) => {
+    items.forEach((item, i) => {
       const pane = document.createElement('div');
       pane.className = 'pane';
       const v = makeLazyVideo(item.src, 'v v-policy-rollout', 'policy-rollout', i + 1);
+      if (opts.playbackRate) applyPlaybackRate(v, opts.playbackRate);
       pane.appendChild(v);
       pane.appendChild(labelEl(item.label));
       row.appendChild(pane);
       if (releaseObserver) releaseObserver.observe(v);
     });
+  }
+
+  function buildPolicyRollout(){
+    buildPolicyRolloutRow('policy-rollout-teleop-row', POLICY_ROLLOUT_TELEOP, { playbackRate: 2 });
+    buildPolicyRolloutRow('policy-rollout-egoengine-row', POLICY_ROLLOUT_EGOENGINE);
   }
 
   buildTasks();
