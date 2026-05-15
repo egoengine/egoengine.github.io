@@ -264,6 +264,15 @@ class TightSyncGroup {
       ],
       aspectRatio: '16 / 3',
     },
+    {
+      task: '(put in, bowl, plate)',
+      videos: [
+        { label: 'Reference', src: 'videos/taco/(put in, bowl, plate)/20231024_253/ref.mp4' },
+        { label: 'Replay', src: 'videos/taco/(put in, bowl, plate)/20231024_253/replay.mp4' },
+        { label: 'EgoEngine', src: 'videos/taco/(put in, bowl, plate)/20231024_253/rl.mp4' },
+      ],
+      aspectRatio: '16 / 3',
+    },
   ];
 
   const ACTION_ARIA_SAMPLES = [
