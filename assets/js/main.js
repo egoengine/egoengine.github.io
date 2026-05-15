@@ -973,7 +973,7 @@ class TightSyncGroup {
   }
 
   function buildPolicyRollout(){
-    buildPolicyRolloutRow('policy-rollout-teleop-row', POLICY_ROLLOUT_TELEOP, { playbackRate: 2 });
+    buildPolicyRolloutRow('policy-rollout-teleop-row', POLICY_ROLLOUT_TELEOP);
     buildPolicyRolloutRow('policy-rollout-egoengine-row', POLICY_ROLLOUT_EGOENGINE);
   }
 
