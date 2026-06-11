@@ -40,35 +40,50 @@
       </div>
       -->
 
+      <section class="abstract-block" id="abstract">
+        <div class="section-kicker">Abstract</div>
+        <p class="abstract-text">
+          Dexterous manipulation is limited by the cost of collecting large-scale robot demonstrations.
+          Egocentric human videos offer a scalable source of diverse manipulation behaviors, but directly using them for robot learning requires bridging two gaps: the visual gap between human and robot observations, and the action gap between human motion and robot-executable action.
+          We propose EgoEngine, a scalable framework for transforming egocentric human manipulation videos into high-fidelity robot data.
+          Given an egocentric RGB video, EgoEngine produces:
+          (i) a high-fidelity robot observation video replacing human with robot while preserving scene context and temporal alignment, and
+          (ii) a task-aligned, executable robot action trajectory under feasibility constraints.
+          Experiments in simulation and on real robots show that EgoEngine enables scalable conversion of human videos into robot data and, to our knowledge, demonstrates the first zero-shot visuomotor dexterous policy learning from egocentric human videos without real-robot demonstrations.
+        </p>
+      </section>
+
       <div class="teaser-wrap">
         <img src="videos/teaser.png" alt="EgoEngine Teaser" class="teaser-image" />
       </div>
 
-      <section class="abstract-block" id="abstract">
-        <div class="section-kicker">Abstract</div>
-        <p class="abstract-text">
-          Dexterous manipulation is bottlenecked by the cost of collecting large-scale, physically feasible demonstrations.
-          Egocentric human videos offer abundant manipulation behaviors at scale, but transforming these human videos into robot-executable demonstrations is challenging due to embodiment appearance difference and feasibility constraints.
-          We propose EgoEngine, a scalable framework for human video-conditioned robot data generation simultanously address human-to-robot visual gap and action gap.
-          Given an egocentric RGB manipulation video, EgoEngine generates paired robot demonstrations:
-          (i) a high-fidelity robot observation video aligned with the generated actions and scene context and
-          (ii) a executable action sequence computed via trajectory optimization that tracks task intent while enforcing kinematic, dynamic, and contact constraints.
-          Our experiments show that EgoEngine enabling robust large-scale dataset construction from human videos, and achieve zero-shot downstream policy learning without any real robot demonstration.
+      <section class="overview-block" id="method-overview">
+        <div class="section-kicker">Method Overview</div>
+        <div class="overview-figure-wrap">
+          <img src="fig/pipeline.png" alt="EgoEngine pipeline overview" class="overview-figure" />
+        </div>
+        <p class="overview-text">
+          <strong>EgoEngine</strong> is a <strong>Scalable</strong> data engine that converts egocentric human videos into robot demonstrations.
+          Given an egocentric human video, EgoEngine constructs a digital twin and jointly produces
+          (1) a high-fidelity, temporally consistent robot observation video and
+          (2) executable action trajectories aligned with the video.
+          The generated demonstrations serve as training data for downstream visuomotor policies, enabling <strong>Zero-shot</strong> execution.
         </p>
       </section>
+
     </header>
 
     <section class="branch-section" id="visual-branch">
       <div class="branch-copy">
-        <h2>Visual Branch</h2>
-        <p>We first show the visual fidelity of generated observations, followed by dataset-scale visualizations from TACO and Aria.</p>
+        <h2>Visual Generation</h2>
+        <p>We present qualitative results for robot observation generation, followed by dataset-scale examples from TACO and Aria.</p>
       </div>
 
       <section class="visual-comparison" id="visual-comparison">
         <div class="subsection-head">
-          <h3>Visual Comparison</h3>
+          <h3>Qualitative Comparison</h3>
         </div>
-        <div class="hint">Human, EgoMimic, VACE (WAN2.1), Masquerade, and EgoEngine.</div>
+        <div class="hint">From left to right: human input, EgoMimic, VACE (WAN2.1), Masquerade, and EgoEngine.</div>
         <div class="comparison-block">
           <div class="comparison-row" id="visual-comparison-row"></div>
         </div>
@@ -76,9 +91,9 @@
 
       <section class="visual-generation-section" id="visual-generation">
         <div class="subsection-head">
-          <h3>Visual Generation</h3>
+          <h3>Dataset-Scale Visualizations</h3>
         </div>
-        <div class="hint">Scroll to move between tasks. Each task shows Human Videos -> Simulation -> EgoEngine.</div>
+        <div class="hint">Each task shows the input egocentric video, the corresponding simulation rollout, and the observation generated by EgoEngine.</div>
         <div class="visual-generation-block">
           <section class="taco-section" id="taco">
             <div class="taco-scroll-wrap">
@@ -100,11 +115,10 @@
 
       <section class="tasks" id="tasks">
         <div class="subsection-head">
-          <h3>Real-World Visualization</h3>
+          <h3>Real-World Observation Transfer</h3>
         </div>
-        <div class="hint">Slide horizontally to move between tasks. Each slide contains one full task.</div>
-        <div class="hint">Left: <strong>Human Videos</strong> (human foreground). Right: <strong>EgoEngine</strong> (robot foreground).</div>
-        <div class="hint">Note: The robot has since been upgraded, and some demos here were collected with Aria Gen 1 glasses.</div>
+        <div class="hint">Each task contains paired real-world examples comparing the human foreground observations with the robot foreground observations generated by EgoEngine.</div>
+        <div class="hint">Some examples were collected with an earlier robot configuration and Aria Gen 1 glasses.</div>
         <div class="taco-scroll-wrap real-world-scroll-wrap">
           <div class="real-world-track" id="real-world-track"></div>
           <div class="taco-scroll-cue left hidden" id="real-world-scroll-cue-left" aria-hidden="true">&larr;</div>
@@ -116,8 +130,8 @@
 
     <section class="branch-section" id="action-branch">
       <div class="branch-copy">
-        <h2>Action Branch</h2>
-        <p>We next present executable action outputs produced by EgoEngine on both TACO and Aria tasks.</p>
+        <h2>Action Generation</h2>
+        <p>We present executable action trajectories produced by EgoEngine on both TACO and Aria tasks.</p>
       </div>
 
       <section class="action-teaser-section" id="action-teaser">
@@ -128,22 +142,22 @@
           </div>
           <div class="action-teaser-pane main">
             <video src="videos/rollout/teaser/replay_knife.mp4" autoplay muted loop playsinline preload="metadata"></video>
-            <div class="labels">Refined Action Replay</div>
+            <div class="labels">Refined trajectory replay</div>
           </div>
           <div class="action-teaser-pane side">
             <video src="videos/rollout/teaser/sim_knife.mp4" autoplay muted loop playsinline preload="metadata"></video>
             <div class="labels">Simulation</div>
           </div>
-          <p class="action-teaser-note">EgoEngine converts an egocentric human video into a digital-twin rollout and refines it into an executable real-robot trajectory for long-horizon dexterous tool use.</p>
+          <p class="action-teaser-note">EgoEngine maps an egocentric human video to a digital-twin rollout and refines it into an executable real-robot trajectory for long-horizon dexterous manipulation.</p>
         </div>
       </section>
-      <p class="action-teaser-safety-note">Safety note: we add a z-axis offset and place a sponge under the knife to avoid collision with the table.</p>
+      <p class="action-teaser-safety-note">For safety, we add a z-axis offset and place a sponge beneath the knife to avoid collision with the table.</p>
 
       <section class="action-section" id="refined-action">
         <div class="subsection-head">
-          <h3>Refined Action</h3>
+          <h3>Trajectory Refinement</h3>
         </div>
-        <div class="hint">TACO on top and Aria below. Each track scrolls independently.</div>
+        <div class="hint">The top row shows TACO tasks and the bottom row shows Aria tasks; the two tracks can be browsed independently.</div>
         <div class="action-generation-block">
           <section class="action-taco-section" id="action-taco">
             <div class="taco-scroll-wrap">
@@ -165,13 +179,13 @@
 
     <section class="branch-section" id="real-world">
       <div class="branch-copy">
-        <h2>Real World</h2>
-        <p>We finally show real-world task results, including paired human observations and generated robot observations.</p>
+        <h2>Policy Evaluation</h2>
+        <p>We present real-world policy rollouts for tasks learned from EgoEngine-generated demonstrations.</p>
       </div>
 
       <section class="rollout-section" id="policy-rollout">
         <div class="subsection-head">
-          <h3>Policy Rollout</h3>
+          <h3>Real-World Rollouts</h3>
         </div>
         <div class="rollout-block">
           <div class="subhead">Teleop <span class="speed-badge">3x</span></div>
@@ -182,6 +196,31 @@
           <div class="rollout-row" id="policy-rollout-egoengine-row"></div>
         </div>
       </section>
+    </section>
+
+    <section class="paper-figure-section" id="results">
+      <div class="paper-figure-header">
+        <h2>Rollout Performance</h2>
+        <p>Representative quantitative comparison. Additional results are provided in the paper.</p>
+      </div>
+      <div class="paper-figure-grid">
+        <figure class="paper-figure">
+          <div class="paper-figure-media">
+            <img src="fig/results.png" alt="Policy success rate comparison on four Aria tasks" class="paper-figure-image" />
+          </div>
+          <figcaption class="paper-figure-caption">
+            Policy success rate (SR) on four Aria tasks. EgoEngine enables zero-shot real-robot policy learning from egocentric human videos and substantially improves performance over direct retargeting from human videos and prior baselines such as Phantom, approaching the performance of real-robot teleoperation on several tasks.
+          </figcaption>
+        </figure>
+        <figure class="paper-figure">
+          <div class="paper-figure-media">
+            <img src="fig/ablation.png" alt="Ablation of visual and action generation for zero-shot policy learning" class="paper-figure-image" />
+          </div>
+          <figcaption class="paper-figure-caption">
+            Ablation results show that executable action generation provides the dominant gain, while visual generation offers an additional improvement. Together, the two branches yield the strongest zero-shot policy learning performance.
+          </figcaption>
+        </figure>
+      </div>
     </section>
   </div>
 
