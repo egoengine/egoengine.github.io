@@ -198,6 +198,26 @@
     text-align:left;
     text-wrap:pretty;
   }
+  .citation-section{
+    max-width:min(1080px, 88vw);
+    margin:2vh auto 6vh;
+  }
+  .citation-section .section-kicker{
+    display:table;
+    margin:0 auto 16px;
+  }
+  .citation-code{
+    margin:0;
+    padding:24px 28px;
+    overflow-x:auto;
+    border:1px solid rgba(17,17,17,.1);
+    border-radius:18px;
+    background:#f7f4ef;
+    color:#1a1a1a;
+    box-shadow:0 12px 34px rgba(17,17,17,.06);
+    font:14px/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    white-space:pre;
+  }
   .teaser-wrap{
     width:100%;
     text-align:center;
@@ -806,5 +826,13 @@
     }
     .paper-figure-caption{
       font-size:14px;
+    }
+    .citation-section{
+      max-width:min(1080px, 92vw);
+    }
+    .citation-code{
+      padding:18px 16px;
+      border-radius:14px;
+      font-size:12px;
     }
   }
