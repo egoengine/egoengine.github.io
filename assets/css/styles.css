@@ -13,6 +13,64 @@
     font:16px/1.4 "Times New Roman", Times, serif;
   }
 
+  .project-nav{
+    position:fixed;
+    inset:0 0 auto;
+    z-index:1000;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+    padding:17px clamp(20px,4vw,60px);
+    color:#fff;
+    background:linear-gradient(180deg,rgba(8,7,10,.82),rgba(8,7,10,0));
+    transition:background .2s ease,box-shadow .2s ease,backdrop-filter .2s ease;
+  }
+  .project-nav.scrolled{
+    background:rgba(12,10,15,.92);
+    box-shadow:0 10px 28px rgba(0,0,0,.2);
+    backdrop-filter:blur(14px);
+  }
+  .project-nav a{
+    color:inherit;
+    text-decoration:none;
+  }
+  .project-nav-brand{
+    flex:0 0 auto;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px;
+    font-weight:900;
+    letter-spacing:-.025em;
+  }
+  .project-nav-links{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:clamp(13px,1.7vw,25px);
+    min-width:0;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:13px;
+    font-weight:650;
+  }
+  .project-nav-links a{
+    opacity:.72;
+    transition:opacity .16s ease,color .16s ease;
+  }
+  .project-nav-links a:hover,
+  .project-nav-links a.active{
+    opacity:1;
+    color:#e3d6ff;
+  }
+  #abstract,
+  #method-overview,
+  #visual-branch,
+  #action-branch,
+  #real-world,
+  #results,
+  #citation{
+    scroll-margin-top:88px;
+  }
+
   /* ===== HERO (unchanged layout, now light-load) ===== */
   .hero{ position:relative; width:100vw; height:100vh; overflow:hidden; }
   .stage{
@@ -766,6 +824,24 @@
   }
 
   @media (max-width:560px){
+    .project-nav{
+      gap:18px;
+      padding:14px 16px;
+      overflow:hidden;
+    }
+    .project-nav-brand{
+      font-size:15px;
+    }
+    .project-nav-links{
+      justify-content:flex-start;
+      gap:15px;
+      overflow-x:auto;
+      scrollbar-width:none;
+      font-size:12px;
+    }
+    .project-nav-links::-webkit-scrollbar{
+      display:none;
+    }
     .action-teaser-row{
       gap:4px;
     }
