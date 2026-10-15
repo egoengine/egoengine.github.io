@@ -912,3 +912,35 @@
       font-size:12px;
     }
   }
+
+
+/* Publication authors */
+.fancy-title{margin-bottom:0}
+.paper-authors{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px 24px;
+  max-width:1080px;
+  margin:0 auto 8px;
+  padding:0 20px;
+  list-style:none;
+  text-align:center;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:clamp(16px,1.45vw,19px);
+  font-weight:550;
+  line-height:1.5;
+}
+.paper-authors li{white-space:nowrap}
+.paper-authors a{
+  color:inherit;
+  text-decoration:underline;
+  text-decoration-color:rgba(68,51,119,.4);
+  text-underline-offset:4px;
+  transition:color .16s ease,text-decoration-color .16s ease;
+}
+.paper-authors a:hover,
+.paper-authors a:focus-visible{
+  color:#443377;
+  text-decoration-color:currentColor;
+}
